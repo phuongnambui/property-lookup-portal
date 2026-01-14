@@ -7,8 +7,8 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/phuongnambui/property-lookup-portal">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
+  <a href="https://vncosurveys.com">
+    <img src="images/logo.png" alt="Logo" width="540" height="134">
   </a>
 
 <h3 align="center">VNCO Property Lookup Portal</h3>
@@ -32,6 +32,7 @@
     </li>
     <li><a href="#for-customers">For Customers</a></li>
     <li><a href="#for-administrators">For Administrators</a></li>
+    <li><a href="#database-schema">Database Schema</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contact">Contact</a></li>
   </ol>
@@ -39,8 +40,6 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-
-[![VNCO Property Portal Screen Shot][product-screenshot]](https://vncosurveys.com)
 
 The VNCO Property Lookup Portal is a web-based application for VNCO SURVEYS that allows customers to check the status of their lot grading certificate jobs by searching their property address.
 
@@ -138,6 +137,26 @@ For bulk updates:
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+<!-- DATABASE SCHEMA -->
+## Database Schema
+
+### Properties Table
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | Integer | Auto-incrementing primary key |
+| address | String | Property address (unique, searchable) |
+| service_type | Enum | "Rough Grade" or "Final Grade" |
+| order_date | DateTime | Date survey was ordered |
+| payment_status | Enum | "Pending", "Paid", or "Overdue" |
+| inspection_status | Enum | "Scheduled", "In Progress", or "Completed" |
+| client_name | String | Customer name |
+| client_phone | String | Customer phone number |
+| created_at | DateTime | Record creation timestamp |
+| updated_at | DateTime | Last update timestamp |
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 <!-- LICENSE -->
 ## License
 
@@ -162,7 +181,6 @@ Phuong Nam Bui - basten2006@icloud.com
 <!-- MARKDOWN LINKS & IMAGES -->
 [license-shield]: https://img.shields.io/badge/License-Proprietary-red.svg?style=for-the-badge
 [license-url]: #license
-[product-screenshot]: images/screenshot.png
 
 [React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
 [React-url]: https://reactjs.org/
