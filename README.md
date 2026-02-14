@@ -14,7 +14,7 @@
 <h3 align="center">VNCO Property Lookup Portal</h3>
 
   <p align="center">
-    Customer portal for tracking lot grading certificate jobs
+    Customer portal for tracking lot grading certificate jobs for large clients
     <br />
     <a href="https://vncosurveys.com"><strong>Visit VNCO SURVEYS »</strong></a>
   </p>
@@ -41,7 +41,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-The VNCO Property Lookup Portal is a web-based application for VNCO SURVEYS that allows customers to check the status of their lot grading certificate jobs by searching their property address.
+The VNCO Property Lookup Portal is a web-based application for VNCO SURVEYS that allows big clients (builders/developers with multiple properties) to track their lot grading certificate jobs using a customer code.
 
 **About VNCO SURVEYS:**
 
@@ -52,12 +52,14 @@ VNCO SURVEYS is an Edmonton-based land surveying company (established 2018) spec
 
 **What This Portal Does:**
 
-Customers can search by address to view:
+Large clients can access their property dashboard by entering their customer code to view all their properties with:
+- Property address
+- Service type (Rough Grade / Final Grade)
 - Order date
 - Payment status (Pending, Paid, Overdue)
 - Inspection status (Scheduled, In Progress, Completed)
 
-No login required - simple search by address.
+No password required - access via customer code only.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -74,11 +76,17 @@ No login required - simple search by address.
 <!-- FOR CUSTOMERS -->
 ## For Customers
 
+**Target Users:**
+
+This portal is designed for **big clients** (builders, developers, construction companies) who have multiple properties being surveyed by VNCO SURVEYS.
+
 **How to Use:**
 
-1. Visit the portal website
-2. Enter your property address
-3. View your job information:
+1. Visit `portal.vncosurveys.com`
+2. Enter your customer code (provided by VNCO SURVEYS)
+3. View all your properties in a dashboard showing:
+   - Address
+   - Service type
    - Order date
    - Payment status
    - Inspection status
@@ -88,38 +96,46 @@ No login required - simple search by address.
 - **In Progress**: Survey completed, submitted to City of Edmonton
 - **Completed**: City inspection passed, certificate issued
 
+**Getting Your Customer Code:**
+
+When you place an order with VNCO SURVEYS, you will be assigned a unique customer code (e.g., VNCO-001). Use this code to access the portal.
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- FOR ADMINISTRATORS -->
 ## For Administrators
 
+**Admin Login:**
+
+Administrators access a secure dashboard with username and password to manage customer data and property statuses.
+
 **Managing Job Data:**
 
-Administrators can manage property data through a web-based admin dashboard.
+**CSV Upload**
 
-**Option 1: Admin Dashboard**
+Administrators manage all data through a single CSV file containing both customer and property information.
 
-Add or update jobs through simple web forms:
-1. Log into admin dashboard
-2. Add new jobs or search existing ones
-3. Update payment status and inspection status
-4. Save changes
+**CSV Format:**
 
-**Option 2: CSV Import**
+| customer_code | company_name | address | service_type | order_date | payment_status | inspection_status |
+|---------------|--------------|---------|--------------|------------|----------------|-------------------|
+| VNCO-001 | ABC Developments | 123 Main St Edmonton AB | Final Grade | 2024-01-15 | Paid | Completed |
+| VNCO-001 | ABC Developments | 456 Oak Ave Edmonton AB | Rough Grade | 2024-02-01 | Pending | Scheduled |
+| VNCO-002 | XYZ Builders | 321 Elm St Edmonton AB | Final Grade | 2024-02-10 | Paid | Completed |
 
-For bulk updates:
-1. Maintain data in Excel with these columns:
-   - Address
-   - Service Type
-   - Order Date
-   - Payment Status
-   - Inspection Status
-   - Client Name
-   - Client Phone
+**Upload Process:**
+1. Maintain data in Excel with the columns shown above
+2. Log into admin dashboard
+3. Click "Upload CSV"
+4. Select your CSV file
+5. System automatically creates/updates customers and properties
+6. Confirmation shows number of records processed
 
-2. Export as CSV
-3. Upload through admin dashboard
-4. System automatically updates database
+**How It Works:**
+- System automatically creates customers from unique customer_code + company_name combinations
+- Each row represents one property
+- Multiple rows with the same customer_code belong to the same customer
+- Easy to update: just modify the CSV and re-upload
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -127,31 +143,41 @@ For bulk updates:
 ## Roadmap
 
 **Current Features:**
-- [x] Address search functionality
-- [x] Display job status (order date, payment, inspection)
+- [x] Customer code-based access (no password)
+- [x] View all properties for a customer
 - [x] Mobile-responsive design
+- [x] Admin authentication
+- [x] CSV upload for bulk data management
 
 **Planned Features:**
-- [ ] CSV import for administrators
-- [ ] Admin dashboard for data management
+- [ ] Web-based form for individual property updates
+- [ ] Search/filter properties in admin dashboard
+- [ ] Export current data as CSV backup
+- [ ] Email notifications for status changes
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- DATABASE SCHEMA -->
 ## Database Schema
 
+### Customers Table
+
+| Field | Type | Description |
+|-------|------|-------------|
+| customer_code | String | Unique identifier (e.g., "VNCO-001"), Primary Key |
+| company_name | String | Client company name |
+
 ### Properties Table
 
 | Field | Type | Description |
 |-------|------|-------------|
 | id | Integer | Auto-incrementing primary key |
-| address | String | Property address (unique, searchable) |
+| customer_code | String | Links to customers table |
+| address | String | Property address |
 | service_type | Enum | "Rough Grade" or "Final Grade" |
-| order_date | DateTime | Date survey was ordered |
+| order_date | Date | Date survey was ordered |
 | payment_status | Enum | "Pending", "Paid", or "Overdue" |
 | inspection_status | Enum | "Scheduled", "In Progress", or "Completed" |
-| client_name | String | Customer name |
-| client_phone | String | Customer phone number |
 | created_at | DateTime | Record creation timestamp |
 | updated_at | DateTime | Last update timestamp |
 
