@@ -2,7 +2,6 @@ const fs = require('fs');
 const path = require('path');
 const csv = require('csv-parser');
 
-// In-memory storage (like COMP1531)
 let data = {
   customers: [],
   properties: []
@@ -10,7 +9,7 @@ let data = {
 
 const dataFilePath = path.join(__dirname, '../data/data.json');
 
-// Load from JSON file (persistent storage - like COMP1531)
+// Load from JSON file for data persistance
 const loadFromFile = () => {
   if (fs.existsSync(dataFilePath)) {
     const fileData = fs.readFileSync(dataFilePath, 'utf-8');
@@ -21,7 +20,7 @@ const loadFromFile = () => {
   return false;
 };
 
-// Save to JSON file (data persistence - like COMP1531)
+// Save to JSON file 
 const saveToFile = () => {
   fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2));
 };
@@ -30,12 +29,12 @@ const saveToFile = () => {
 const loadData = () => {
   const csvPath = path.join(__dirname, '../data/properties.csv');
   
-  // First try to load from JSON file (if exists from previous run)
+  // First try to load from JSON file
   if (loadFromFile()) {
     return;
   }
 
-  // If no JSON file, load from CSV (initial setup)
+  // If no JSON file, load from CSV
   if (!fs.existsSync(csvPath)) {
     console.log('No data file found - using empty data');
     return;
