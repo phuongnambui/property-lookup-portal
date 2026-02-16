@@ -14,7 +14,7 @@
 <h3 align="center">VNCO Property Lookup Portal</h3>
 
   <p align="center">
-    Customer portal for tracking lot grading certificate jobs for large clients
+    Customer portal for tracking lot grading certificate jobs with horizontal timeline visualization
     <br />
     <a href="https://vncosurveys.com"><strong>Visit VNCO SURVEYS »</strong></a>
   </p>
@@ -41,7 +41,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-The VNCO Property Lookup Portal is a web-based application for VNCO SURVEYS that allows big clients (builders/developers with multiple properties) to track their lot grading certificate jobs using a customer code.
+The VNCO Property Lookup Portal is a web-based application for VNCO SURVEYS that allows big clients (builders/developers with multiple properties) to track their lot grading certificate jobs using a customer code. The portal provides detailed horizontal timeline visualization showing the progress of each property through the certification process.
 
 **About VNCO SURVEYS:**
 
@@ -53,11 +53,12 @@ VNCO SURVEYS is an Edmonton-based land surveying company (established 2018) spec
 **What This Portal Does:**
 
 Large clients can access their property dashboard by entering their customer code to view all their properties with:
-- Property address
-- Service type (Rough Grade / Final Grade)
+- Property address and service type
 - Order date
-- Payment status (Pending, Paid, Overdue)
-- Inspection status (Scheduled, In Progress, Completed)
+- Horizontal timeline showing progression through certification stages
+- Current status with historical tracking
+- Deficiency photos (if applicable)
+- Attempt number for failed properties
 
 No password required - access via customer code only.
 
@@ -84,17 +85,36 @@ This portal is designed for **big clients** (builders, developers, construction 
 
 1. Visit `portal.vncosurveys.com`
 2. Enter your customer code (provided by VNCO SURVEYS)
-3. View all your properties in a dashboard showing:
-   - Address
-   - Service type
-   - Order date
-   - Payment status
-   - Inspection status
+3. View all your properties in a dashboard
+4. Click on any property to see detailed horizontal timeline
 
-**Inspection Status:**
-- **Scheduled**: Survey booked, awaiting completion
-- **In Progress**: Survey completed, submitted to City of Edmonton
-- **Completed**: City inspection passed, certificate issued
+**Property Status Timeline:**
+
+Each property progresses through these stages:
+
+1. **Request Received** - Survey order placed
+2. **Surveyed** - Survey completed on-site
+3. **Certificate Processing** - Certificate being prepared
+4. **Submitted to City** - Submitted to City of Edmonton for review
+5. **Pass** - City inspection passed, certificate issued (FINAL)
+6. **Fail** - City inspection failed, process restarts from beginning
+
+**Timeline Visualization:**
+
+The horizontal timeline shows:
+- Completed steps with dates
+- Current step highlighted
+- Pending steps grayed out
+
+**Deficiency Information:**
+- Properties with deficiencies will display a deficiency photo below the timeline
+- Deficiency photos show what needs to be corrected
+- After correction, property may be re-surveyed
+
+**Failed Properties:**
+- If a property fails City inspection, the timeline restarts
+- Attempt number indicates how many times the property has been submitted
+- Full history is maintained for tracking purposes
 
 **Getting Your Customer Code:**
 
@@ -111,31 +131,54 @@ Administrators access a secure dashboard with username and password to manage cu
 
 **Managing Job Data:**
 
-**CSV Upload**
+### CSV Upload
 
-Administrators manage all data through a single CSV file containing both customer and property information.
+Administrators manage all data through a CSV file containing customer and property information with timeline tracking.
 
 **CSV Format:**
 
-| customer_code | company_name | address | service_type | order_date | payment_status | inspection_status |
-|---------------|--------------|---------|--------------|------------|----------------|-------------------|
-| VNCO-001 | ABC Developments | 123 Main St Edmonton AB | Final Grade | 2024-01-15 | Paid | Completed |
-| VNCO-001 | ABC Developments | 456 Oak Ave Edmonton AB | Rough Grade | 2024-02-01 | Pending | Scheduled |
-| VNCO-002 | XYZ Builders | 321 Elm St Edmonton AB | Final Grade | 2024-02-10 | Paid | Completed |
+Required columns:
+- `customer_code` - Unique customer identifier (e.g., VNCO-001)
+- `company_name` - Client company name
+- `address` - Property address
+- `service_type` - "Rough Grade" or "Final Grade"
+- `order_date` - Date survey was ordered (YYYY-MM-DD)
+- `current_status` - Current stage in process
+- `status_history` - Timeline of all status changes (format: "Status:Date,Status:Date")
+- `has_deficiency` - true/false
+- `deficiency_photo_url` - Path to deficiency photo (if applicable)
+- `attempt_number` - Number of submission attempts (starts at 1)
 
-**Upload Process:**
+**Status History Format:**
+```
+"Request Received:2024-01-15,Surveyed:2024-01-16,Certificate Processing:2024-01-17"
+```
+
+### Upload Process
+
 1. Maintain data in Excel with the columns shown above
 2. Log into admin dashboard
 3. Click "Upload CSV"
 4. Select your CSV file
-5. System automatically creates/updates customers and properties
+5. System automatically creates/updates customers and properties with full timeline data
 6. Confirmation shows number of records processed
 
-**How It Works:**
-- System automatically creates customers from unique customer_code + company_name combinations
-- Each row represents one property
-- Multiple rows with the same customer_code belong to the same customer
-- Easy to update: just modify the CSV and re-upload
+### Manual Status Updates
+
+Administrators can also update property status manually through the dashboard:
+1. Select a property
+2. Choose next status in workflow
+3. System automatically timestamps the update
+4. If status is "Fail", property automatically restarts from "Request Received"
+
+**Note:** Properties marked as "Pass" cannot have their status changed.
+
+### Photo Upload
+
+For properties with deficiencies:
+1. Upload deficiency photo through admin dashboard
+2. Photo is automatically linked to the property
+3. Customers will see the photo when viewing property details
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -145,15 +188,20 @@ Administrators manage all data through a single CSV file containing both custome
 **Current Features:**
 - [x] Customer code-based access (no password)
 - [x] View all properties for a customer
+- [x] Timeline tracking with date stamps for each status
+- [x] Failed property handling (automatic restart)
+- [x] Deficiency photo support
 - [x] Mobile-responsive design
 - [x] Admin authentication
 - [x] CSV upload for bulk data management
 
 **Planned Features:**
-- [ ] Web-based form for individual property updates
-- [ ] Search/filter properties in admin dashboard
-- [ ] Export current data as CSV backup
+- [ ] Horizontal timeline visualization component on frontend
+- [ ] Property detail view with visual timeline display
+- [ ] Photo upload interface for admin
+- [ ] Manual status update through UI
 - [ ] Email notifications for status changes
+- [ ] Export timeline history as PDF
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -176,10 +224,23 @@ Administrators manage all data through a single CSV file containing both custome
 | address | String | Property address |
 | service_type | Enum | "Rough Grade" or "Final Grade" |
 | order_date | Date | Date survey was ordered |
-| payment_status | Enum | "Pending", "Paid", or "Overdue" |
-| inspection_status | Enum | "Scheduled", "In Progress", or "Completed" |
+| current_status | Enum | Current stage: "Request Received", "Surveyed", "Certificate Processing", "Submitted to City", "Pass", "Fail" |
+| status_history | Array | Timeline of all status changes with dates |
+| has_deficiency | Boolean | Whether property has deficiency |
+| deficiency_photo_url | String | Path to deficiency photo (nullable) |
+| attempt_number | Integer | Number of submission attempts (increments on Fail) |
 | created_at | DateTime | Record creation timestamp |
 | updated_at | DateTime | Last update timestamp |
+
+### Status History Object Structure
+```json
+{
+  "status": "Surveyed",
+  "date": "2024-01-16",
+  "timestamp": "2024-01-16T10:30:00Z",
+  "note": "Optional note for this status change"
+}
+```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
