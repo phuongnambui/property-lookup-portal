@@ -49,7 +49,9 @@ describe('Customer Portal Tests', () => {
     expect(property).toHaveProperty('address');
     expect(property).toHaveProperty('service_type');
     expect(property).toHaveProperty('order_date');
-    expect(property).toHaveProperty('payment_status');
-    expect(property).toHaveProperty('inspection_status');
+    expect(property).toHaveProperty('current_status');
+    expect(property).toHaveProperty('status_history');
+    expect(property).toHaveProperty('has_deficiency');
+    expect(property).toHaveProperty('attempt_number');
   });
 });
