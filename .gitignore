@@ -1,3 +1,9 @@
+# Project-specific
+data/data.json
+data/*.csv
+!data/properties.csv
+uploads/
+
 # Logs
 logs
 *.log

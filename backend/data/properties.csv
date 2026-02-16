@@ -1,6 +1,6 @@
-customer_code,company_name,address,service_type,order_date,payment_status,inspection_status
-VNCO-001,ABC Developments,123 Main St Edmonton AB,Final Grade,2024-01-15,Paid,Completed
-VNCO-001,ABC Developments,456 Oak Ave Edmonton AB,Rough Grade,2024-02-01,Pending,Scheduled
-VNCO-001,ABC Developments,789 Pine Rd Edmonton AB,Final Grade,2024-02-05,Paid,In Progress
-VNCO-002,XYZ Builders,321 Elm St Edmonton AB,Final Grade,2024-02-10,Paid,Completed
-VNCO-002,XYZ Builders,654 Birch Ave Edmonton AB,Rough Grade,2024-02-12,Pending,Scheduled
+customer_code,company_name,address,service_type,order_date,current_status,status_history,has_deficiency,deficiency_photo_url,attempt_number
+VNCO-001,ABC Developments,123 Main St Edmonton AB,Final Grade,2024-01-15,Pass,"Request Received:2024-01-15,Surveyed:2024-01-16,Certificate Processing:2024-01-17,Submitted to City:2024-01-18,Pass:2024-01-20",false,,1
+VNCO-001,ABC Developments,456 Oak Ave Edmonton AB,Rough Grade,2024-02-01,Surveyed,"Request Received:2024-02-01,Surveyed:2024-02-03",true,uploads/deficiency-456.jpg,1
+VNCO-001,ABC Developments,789 Pine Rd Edmonton AB,Final Grade,2024-02-05,Certificate Processing,"Request Received:2024-02-05,Surveyed:2024-02-06,Certificate Processing:2024-02-08",false,,1
+VNCO-002,XYZ Builders,321 Elm St Edmonton AB,Final Grade,2024-02-10,Submitted to City,"Request Received:2024-02-10,Surveyed:2024-02-11,Certificate Processing:2024-02-12,Submitted to City:2024-02-14",false,,1
+VNCO-002,XYZ Builders,654 Birch Ave Edmonton AB,Rough Grade,2024-02-12,Request Received,"Request Received:2024-02-12,Surveyed:2024-02-13,Submitted to City:2024-02-15,Fail:2024-02-16,Request Received:2024-02-17",true,uploads/deficiency-654.jpg,2
