@@ -1,6 +1,6 @@
 const request = require('sync-request-curl');
 
-const SERVER_URL = 'http://localhost:3000';
+const SERVER_URL = 'http://localhost:5000';
 
 describe('Timeline and Status Tests', () => {
   let adminToken;
