@@ -1,0 +1,169 @@
+.customer-login-container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+  }
+  
+  .login-card {
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 420px;
+    width: 90%;
+    text-align: center;
+  }
+  
+  .vnco-title {
+    color: #dc2626;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+  }
+  
+  .logo {
+    max-width: 200px;
+    margin-bottom: 20px;
+  }
+  
+  h1 {
+    color: #1f2937;
+    margin-bottom: 10px;
+    font-size: 28px;
+    font-weight: 600;
+  }
+  
+  .subtitle {
+    color: #6b7280;
+    margin-bottom: 30px;
+    font-size: 15px;
+  }
+  
+  .form-group {
+    margin-bottom: 24px;
+    text-align: left;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #374151;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 14px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.3s;
+    box-sizing: border-box;
+  }
+  
+  .form-group input:focus {
+    outline: none;
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+  }
+  
+  button {
+    width: 100%;
+    padding: 14px;
+    background: #dc2626;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+  }
+  
+  button:hover:not(:disabled) {
+    background: #b91c1c;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
+  }
+  
+  button:active:not(:disabled) {
+    transform: translateY(0);
+  }
+  
+  button:disabled {
+    background: #d1d5db;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  
+  .error-message {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    border-left: 4px solid #dc2626;
+  }
+  
+  .footer-text {
+    margin-top: 24px;
+    font-size: 14px;
+    color: #6b7280;
+  }
+  
+  .footer-text p {
+    margin-bottom: 8px;
+  }
+  
+  .footer-text a {
+    color: #dc2626;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s;
+  }
+  
+  .footer-text a:hover {
+    color: #b91c1c;
+    text-decoration: underline;
+  }
+
+  .building-scene {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 0 20px;
+    pointer-events: none;
+  }
+  
+  .building {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 2px 2px 0 0;
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    padding: 8px;
+    gap: 4px;
+  }
+  
+  .window {
+    width: 8px;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 1px;
+  }
+  
+  .window.lit {
+    background: rgba(255, 255, 255, 0.9);
+  }
