@@ -1,8 +1,9 @@
 # Project-specific
-data/data.json
-data/*.csv
-!data/properties.csv
-uploads/
+backend/data/data.json
+backend/data/*.csv
+!backend/data/properties.csv
+backend/uploads/
+frontend/.env
 
 # Logs
 logs
