@@ -15,7 +15,7 @@ const CustomerLogin = () => {
     setLoading(true);
 
     try {
-      const response = await axios.get(`http://localhost:5000/api/customer/${customerCode}`);
+      const response = await axios.get(`http://localhost:5001/api/customer/${customerCode}`);
       
       // Store customer data in localStorage
       localStorage.setItem('customerData', JSON.stringify(response.data));
