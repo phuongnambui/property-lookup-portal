@@ -1,0 +1,205 @@
+.admin-dashboard-container {
+    min-height: 100vh;
+    background: #f9fafb;
+  }
+  
+  .admin-badge-nav {
+    background: #1f2937;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  
+  .admin-content {
+    padding: 32px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    border-bottom: 2px solid #e5e7eb;
+  }
+  
+  .tab {
+    background: none;
+    border: none;
+    padding: 12px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s;
+    width: auto;
+    box-shadow: none;
+  }
+  
+  .tab:hover {
+    color: #dc2626;
+    background: #fef2f2;
+    transform: none;
+  }
+  
+  .tab.active {
+    color: #dc2626;
+    border-bottom-color: #dc2626;
+    background: none;
+  }
+  
+  .tab-content {
+    background: white;
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  }
+  
+  /* Upload Section */
+  .upload-section h2 {
+    color: #1f2937;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  
+  .section-description {
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+  
+  .upload-box {
+    margin-bottom: 20px;
+  }
+  
+  .file-input {
+    display: none;
+  }
+  
+  .file-label {
+    display: block;
+    padding: 40px;
+    border: 3px dashed #d1d5db;
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: #f9fafb;
+  }
+  
+  .file-label:hover {
+    border-color: #dc2626;
+    background: #fef2f2;
+  }
+  
+  .file-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: #6b7280;
+  }
+  
+  .upload-icon {
+    font-size: 48px;
+  }
+  
+  .file-selected {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: center;
+    color: #1f2937;
+    font-weight: 600;
+  }
+  
+  .file-icon {
+    font-size: 32px;
+  }
+  
+  .upload-status {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  
+  .upload-status.success {
+    background: #dcfce7;
+    color: #166534;
+    border-left: 4px solid #22c55e;
+  }
+  
+  .upload-status.error {
+    background: #fee2e2;
+    color: #991b1b;
+    border-left: 4px solid #dc2626;
+  }
+  
+  .upload-btn {
+    width: 100%;
+    max-width: 300px;
+    display: block;
+    margin: 0 auto 32px;
+  }
+  
+  /* Stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-top: 32px;
+  }
+  
+  .stat-card {
+    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+    padding: 24px;
+    border-radius: 12px;
+    text-align: center;
+    color: white;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+  }
+  
+  .stat-number {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  
+  .stat-label {
+    font-size: 14px;
+    opacity: 0.9;
+  }
+  
+  /* Properties Section */
+  .properties-section h2 {
+    color: #1f2937;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+  
+  .customer-cell {
+    max-width: 200px;
+  }
+  
+  .customer-name {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 14px;
+    margin-bottom: 2px;
+  }
+  
+  .customer-code-small {
+    font-size: 12px;
+    color: #dc2626;
+    font-weight: 500;
+  }

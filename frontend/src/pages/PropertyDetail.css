@@ -1,0 +1,126 @@
+.property-detail-container {
+    min-height: 100vh;
+    background: #f9fafb;
+  }
+  
+  .back-btn {
+    background: white;
+    color: #dc2626;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+    width: auto;
+    box-shadow: none;
+  }
+  
+  .back-btn:hover {
+    background: #fee2e2;
+    transform: none;
+  }
+  
+  .detail-content {
+    padding: 32px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  
+  .detail-card {
+    background: white;
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  }
+  
+  .property-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 2px solid #f3f4f6;
+  }
+  
+  .property-header h1 {
+    color: #1f2937;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  
+  .property-meta {
+    color: #6b7280;
+    font-size: 15px;
+  }
+  
+  .attempt-badge {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  
+  .timeline-section {
+    margin-bottom: 32px;
+  }
+  
+  .timeline-section h2 {
+    color: #1f2937;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 24px;
+  }
+  
+  .deficiency-section {
+    margin-bottom: 32px;
+  }
+  
+  .deficiency-section h2 {
+    color: #1f2937;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  
+  .photo-container {
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  
+  .deficiency-photo {
+    width: 100%;
+    border-radius: 8px;
+    border: 2px solid #e5e7eb;
+  }
+  
+  .details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    padding-top: 24px;
+    border-top: 2px solid #f3f4f6;
+  }
+  
+  .detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .detail-label {
+    color: #6b7280;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  .detail-value {
+    color: #1f2937;
+    font-size: 16px;
+    font-weight: 600;
+  }

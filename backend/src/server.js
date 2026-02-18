@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
@@ -7,7 +8,7 @@ const { loadData, getData, importCSV, updatePropertyStatus, updateDeficiencyPhot
 const { adminLogin, verifyAdminToken, adminLogout } = require('./adminStore');
 
 const app = express();
-const PORT = 5001;
+const PORT = process.env.PORT || 5001;
 
 // Middleware
 app.use(express.json());
