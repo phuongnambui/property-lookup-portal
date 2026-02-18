@@ -1,3 +1,4 @@
+import config from '../config';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -24,14 +25,14 @@ const AdminDashboard = () => {
   const fetchData = async () => {
     const token = localStorage.getItem('adminToken');
     try {
-      const [customersRes, propertiesRes] = await Promise.all([
-        axios.get('http://localhost:5001/api/admin/customers', {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get('http://localhost:5001/api/admin/properties', {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-      ]);
+        const [customersRes, propertiesRes] = await Promise.all([
+            axios.get(`${config.apiUrl}/api/admin/customers`, {
+              headers: { Authorization: `Bearer ${token}` }
+            }),
+            axios.get(`${config.apiUrl}/api/admin/properties`, {
+              headers: { Authorization: `Bearer ${token}` }
+            })
+        ]);
       setCustomers(customersRes.data.customers);
       setProperties(propertiesRes.data.properties);
     } catch (err) {
@@ -66,7 +67,7 @@ const AdminDashboard = () => {
     setUploadStatus('');
 
     try {
-      const response = await axios.post('http://localhost:5001/api/admin/upload-csv', formData, {
+        const response = await axios.post(`${config.apiUrl}/api/admin/upload-csv`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'

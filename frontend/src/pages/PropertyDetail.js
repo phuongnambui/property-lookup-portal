@@ -1,3 +1,4 @@
+import config from '../config';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Timeline from '../components/Timeline';
@@ -76,11 +77,11 @@ const PropertyDetail = () => {
             <div className="deficiency-section">
               <h2>Deficiency Photo</h2>
               <div className="photo-container">
-                <img
-                  src={`http://localhost:5001/${property.deficiency_photo_url}`}
-                  alt="Deficiency"
-                  className="deficiency-photo"
-                />
+              <img
+                src={`${config.apiUrl}/${property.deficiency_photo_url}`}
+                alt="Deficiency"
+                className="deficiency-photo"
+              />
               </div>
             </div>
           )}
