@@ -6,8 +6,8 @@ let adminSessions = [];
 
 // Hardcoded admin credentials
 const ADMIN_CREDENTIALS = {
-  username: 'admin',
-  passwordHash: '$2b$10$DSUZQhfxIN0k4Hc83/NN5.ZqIIzc1gbjRXJKTQTKYxd89UP1tsZ7a'
+  username: 'Tnguyen0913@gmail.com',
+  passwordHash: '$2b$10$O7CRsCbyQNiOnUAp21lk7ucbep0Kme3qfTD7.Bjn9jdOVF5afF2Pi'
 };
 
 // Hash password
