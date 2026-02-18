@@ -1,0 +1,119 @@
+.timeline-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 40px 20px;
+    background: #f9fafb;
+    border-radius: 12px;
+    position: relative;
+  }
+  
+  .timeline-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+  }
+  
+  .timeline-step {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 12px;
+  }
+  
+  .step-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 2;
+  }
+  
+  .timeline-step.completed .step-circle {
+    background: #22c55e;
+    color: white;
+    border: 4px solid #dcfce7;
+  }
+  
+  .timeline-step.current .step-circle {
+    background: #dc2626;
+    border: 4px solid #fee2e2;
+  }
+  
+  .timeline-step.pending .step-circle {
+  background: #e5e7eb;
+  border: 4px solid #f3f4f6;
+}
+
+.timeline-step.next .step-circle {
+  background: #fef3c7;
+  border: 4px solid #fef9c3;
+}
+  
+  .pulse {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: white;
+    animation: pulse 2s infinite;
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.3);
+      opacity: 0.7;
+    }
+  }
+  
+  .step-line {
+    flex: 1;
+    height: 4px;
+    background: #e5e7eb;
+    margin-left: 8px;
+  }
+  
+  .step-line.completed {
+    background: #22c55e;
+  }
+  
+  .step-content {
+    text-align: center;
+    padding: 0 8px;
+  }
+  
+  .step-label {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+  
+  .step-label.completed {
+    color: #166534;
+  }
+  
+  .step-label.current {
+    color: #dc2626;
+  }
+  
+  .step-label.pending {
+    color: #9ca3af;
+  }
+  
+  .step-date {
+    font-size: 12px;
+    color: #6b7280;
+    font-weight: 500;
+  }
