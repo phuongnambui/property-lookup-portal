@@ -1,23 +1,42 @@
 const express = require('express');
 const cors = require('cors');
-const { loadData, getData } = require('./dataStore');
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
+const { loadData, getData, importCSV, updatePropertyStatus, updateDeficiencyPhoto, STATUS_FLOW } = require('./dataStore');
+const { adminLogin, verifyAdminToken, adminLogout } = require('./adminStore');
 
 const app = express();
-const PORT = 5000;
+const PORT = 5001;
 
 // Middleware
 app.use(express.json());
 app.use(cors());
 
+// Configure multer for file uploads
+const upload = multer({ dest: 'uploads/' });
+
+// Serve uploaded photos
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 // Load data on startup
 loadData();
+
+// ====================================================================
+// CUSTOMER ENDPOINTS
+// ====================================================================
 
 // Test endpoint
 app.get('/test', (req, res) => {
   res.json({ message: 'Server is running!' });
 });
 
-// Customer login
+// Get status workflow
+app.get('/api/status-flow', (req, res) => {
+  return res.json({ statuses: STATUS_FLOW });
+});
+
+// Customer login - get all properties for a customer code
 app.get('/api/customer/:customerCode', (req, res) => {
   const { customerCode } = req.params;
   
@@ -36,16 +55,11 @@ app.get('/api/customer/:customerCode', (req, res) => {
   });
 });
 
-const { adminLogin, verifyAdminToken, adminLogout } = require('./adminStore');
-const { importCSV } = require('./dataStore');
-const multer = require('multer');
-const fs = require('fs');
-const path = require('path');
+// ====================================================================
+// ADMIN ENDPOINTS
+// ====================================================================
 
-// Configure multer for file uploads
-const upload = multer({ dest: 'uploads/' });
-
-// Admin login endpoint
+// Admin login
 app.post('/api/admin/login', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -56,49 +70,18 @@ app.post('/api/admin/login', async (req, res) => {
   }
 });
 
-// Admin logout endpoint
+// Admin logout
 app.post('/api/admin/logout', (req, res) => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
     if (!token) {
       return res.status(401).json({ error: 'No token provided' });
     }
-    
     verifyAdminToken(token);
     const result = adminLogout(token);
     return res.json(result);
   } catch (error) {
     return res.status(401).json({ error: error.message });
-  }
-});
-
-// Admin CSV upload endpoint
-app.post('/api/admin/upload-csv', upload.single('csvFile'), async (req, res) => {
-  try {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    if (!token) {
-      return res.status(401).json({ error: 'No token provided' });
-    }
-    
-    verifyAdminToken(token);
-
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
-    }
-
-    // Import the CSV
-    const result = await importCSV(req.file.path);
-
-    // Delete uploaded file after processing
-    fs.unlinkSync(req.file.path);
-
-    return res.json({
-      message: 'CSV uploaded successfully',
-      customersImported: result.customers,
-      propertiesImported: result.properties
-    });
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
   }
 });
 
@@ -109,9 +92,7 @@ app.get('/api/admin/customers', (req, res) => {
     if (!token) {
       return res.status(401).json({ error: 'No token provided' });
     }
-    
     verifyAdminToken(token);
-
     const data = getData();
     return res.json({ customers: data.customers });
   } catch (error) {
@@ -126,9 +107,7 @@ app.get('/api/admin/properties', (req, res) => {
     if (!token) {
       return res.status(401).json({ error: 'No token provided' });
     }
-    
     verifyAdminToken(token);
-
     const data = getData();
     return res.json({ properties: data.properties });
   } catch (error) {
@@ -136,11 +115,30 @@ app.get('/api/admin/properties', (req, res) => {
   }
 });
 
-const { updatePropertyStatus, updateDeficiencyPhoto, STATUS_FLOW } = require('./dataStore');
+// Admin upload CSV
+app.post('/api/admin/upload-csv', upload.single('csvFile'), async (req, res) => {
+  try {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+    verifyAdminToken(token);
 
-// Get status workflow 
-app.get('/api/status-flow', (req, res) => {
-  return res.json({ statuses: STATUS_FLOW });
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const result = await importCSV(req.file.path);
+    fs.unlinkSync(req.file.path);
+
+    return res.json({
+      message: 'CSV uploaded successfully',
+      customersImported: result.customers,
+      propertiesImported: result.properties
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
 });
 
 // Admin update property status
@@ -150,7 +148,6 @@ app.put('/api/admin/property/:id/status', (req, res) => {
     if (!token) {
       return res.status(401).json({ error: 'No token provided' });
     }
-    
     verifyAdminToken(token);
 
     const propertyId = parseInt(req.params.id);
@@ -177,7 +174,6 @@ app.post('/api/admin/property/:id/photo', upload.single('photo'), (req, res) => 
     if (!token) {
       return res.status(401).json({ error: 'No token provided' });
     }
-    
     verifyAdminToken(token);
 
     const propertyId = parseInt(req.params.id);
@@ -186,7 +182,6 @@ app.post('/api/admin/property/:id/photo', upload.single('photo'), (req, res) => 
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    // Move file to permanent storage location
     const photoDir = path.join(__dirname, '../uploads/deficiency-photos');
     if (!fs.existsSync(photoDir)) {
       fs.mkdirSync(photoDir, { recursive: true });
@@ -195,7 +190,6 @@ app.post('/api/admin/property/:id/photo', upload.single('photo'), (req, res) => 
     const newPath = path.join(photoDir, `${propertyId}-${Date.now()}${path.extname(req.file.originalname)}`);
     fs.renameSync(req.file.path, newPath);
 
-    // Store relative path in database
     const photoUrl = `uploads/deficiency-photos/${path.basename(newPath)}`;
     const updatedProperty = updateDeficiencyPhoto(propertyId, photoUrl);
 
@@ -204,7 +198,6 @@ app.post('/api/admin/property/:id/photo', upload.single('photo'), (req, res) => 
       property: updatedProperty
     });
   } catch (error) {
-    // Clean up file if error
     if (req.file && fs.existsSync(req.file.path)) {
       fs.unlinkSync(req.file.path);
     }
@@ -212,11 +205,10 @@ app.post('/api/admin/property/:id/photo', upload.single('photo'), (req, res) => 
   }
 });
 
-// Serve uploaded photos (static file serving)
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// ====================================================================
+// START SERVER
+// ====================================================================
 
-// Start server
 app.listen(PORT, () => {
   console.log(`⚡️ Server started on port ${PORT}`);
 });
-
