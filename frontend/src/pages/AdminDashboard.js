@@ -1,5 +1,5 @@
 import config from '../config';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './AdminDashboard.css';
@@ -13,26 +13,25 @@ const AdminDashboard = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
+  const fetchData = useCallback(async () => {
     const token = localStorage.getItem('adminToken');
+
+    // If token is missing, kick out (prevents useless requests)
     if (!token) {
       navigate('/admin');
       return;
     }
-    fetchData();
-  }, [navigate]);
 
-  const fetchData = async () => {
-    const token = localStorage.getItem('adminToken');
     try {
-        const [customersRes, propertiesRes] = await Promise.all([
-            axios.get(`${config.apiUrl}/api/admin/customers`, {
-              headers: { Authorization: `Bearer ${token}` }
-            }),
-            axios.get(`${config.apiUrl}/api/admin/properties`, {
-              headers: { Authorization: `Bearer ${token}` }
-            })
-        ]);
+      const [customersRes, propertiesRes] = await Promise.all([
+        axios.get(`${config.apiUrl}/api/admin/customers`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${config.apiUrl}/api/admin/properties`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
+
       setCustomers(customersRes.data.customers);
       setProperties(propertiesRes.data.properties);
     } catch (err) {
@@ -41,7 +40,11 @@ const AdminDashboard = () => {
         navigate('/admin');
       }
     }
-  };
+  }, [navigate]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
@@ -67,14 +70,20 @@ const AdminDashboard = () => {
     setUploadStatus('');
 
     try {
-        const response = await axios.post(`${config.apiUrl}/api/admin/upload-csv`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
+      const response = await axios.post(
+        `${config.apiUrl}/api/admin/upload-csv`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
         }
-      });
+      );
 
-      setUploadStatus(`✓ Success! Imported ${response.data.customersImported} customers and ${response.data.propertiesImported} properties`);
+      setUploadStatus(
+        `✓ Success! Imported ${response.data.customersImported} customers and ${response.data.propertiesImported} properties`
+      );
       setSelectedFile(null);
       fetchData(); // Refresh data
     } catch (err) {
@@ -196,7 +205,7 @@ const AdminDashboard = () => {
           <div className="tab-content">
             <div className="properties-section">
               <h2>All Properties</h2>
-              
+
               <div className="table-container">
                 <table className="property-table">
                   <thead>
@@ -216,10 +225,10 @@ const AdminDashboard = () => {
                       <tr key={property.id}>
                         <td>{property.id}</td>
                         <td className="customer-cell">
-                            <div className="customer-name">
-                                {customers.find(c => c.customer_code === property.customer_code)?.company_name || 'Unknown'}
-                            </div>
-                            <div className="customer-code-small">{property.customer_code}</div>
+                          <div className="customer-name">
+                            {customers.find(c => c.customer_code === property.customer_code)?.company_name || 'Unknown'}
+                          </div>
+                          <div className="customer-code-small">{property.customer_code}</div>
                         </td>
                         <td className="address-cell">{property.address}</td>
                         <td>{property.service_type}</td>
@@ -236,6 +245,7 @@ const AdminDashboard = () => {
                   </tbody>
                 </table>
               </div>
+
             </div>
           </div>
         )}
