@@ -6,7 +6,7 @@ let adminSessions = [];
 
 // Hardcoded admin credentials
 const ADMIN_CREDENTIALS = {
-  username: 'Tnguyen0913@gmail.com',
+  username: 'tnguyen0193@gmail.com',
   passwordHash: '$2b$10$O7CRsCbyQNiOnUAp21lk7ucbep0Kme3qfTD7.Bjn9jdOVF5afF2Pi'
 };
 
@@ -27,7 +27,7 @@ const generateToken = () => {
 
 // Admin login
 const adminLogin = async (username, password) => {
-  if (username !== ADMIN_CREDENTIALS.username) {
+  if (username.toLowerCase() !== ADMIN_CREDENTIALS.username.toLowerCase()) {
     throw new Error('Invalid credentials');
   }
 
