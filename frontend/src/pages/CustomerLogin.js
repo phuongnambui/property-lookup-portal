@@ -14,15 +14,10 @@ const CustomerLogin = () => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     try {
       const response = await axios.get(`${config.apiUrl}/api/customer/${customerCode}`);
-      
-      // Store customer data in localStorage
-      localStorage.setItem('customerData', JSON.stringify(response.data));
-      localStorage.setItem('customerCode', customerCode);
-      
-      // Navigate to dashboard
+      sessionStorage.setItem('customerData', JSON.stringify(response.data));
+      sessionStorage.setItem('customerCode', customerCode);
       navigate('/dashboard');
     } catch (err) {
       if (err.response?.status === 404) {
@@ -41,7 +36,6 @@ const CustomerLogin = () => {
         <img src="/images/logo.png" alt="VNCO SURVEYS" className="logo" />
         <h1>Property Lookup Portal</h1>
         <p className="subtitle">Enter your customer code to view your properties</p>
-        
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="customerCode">Customer Code</label>
@@ -54,14 +48,11 @@ const CustomerLogin = () => {
               required
             />
           </div>
-
           {error && <div className="error-message">{error}</div>}
-
           <button type="submit" disabled={loading}>
             {loading ? 'Loading...' : 'View Properties'}
           </button>
         </form>
-
         <div className="footer-text">
           <p>Don't have a customer code? Contact VNCO SURVEYS</p>
           <a href="/admin">Admin Login</a>

@@ -23,7 +23,7 @@ const AdminLogin = () => {
       });
 
       // Store admin token
-      localStorage.setItem('adminToken', response.data.token);
+      sessionStorage.setItem('adminToken', response.data.token);
       
       // Navigate to admin dashboard
       navigate('/admin/dashboard');
