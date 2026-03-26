@@ -1,257 +1,322 @@
-import config from '../config';
-import React, { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+// pages/AdminDashboard.js
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import config from '../config';
 import './AdminDashboard.css';
 
-const AdminDashboard = () => {
-  const [customers, setCustomers] = useState([]);
-  const [properties, setProperties] = useState([]);
-  const [activeTab, setActiveTab] = useState('upload'); // 'upload' or 'properties'
-  const [loading, setLoading] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState('');
-  const [selectedFile, setSelectedFile] = useState(null);
-  const navigate = useNavigate();
+const STAGES = [
+  'Request Received',
+  'Surveyed',
+  'Certificate Processing',
+  'Submitted to City',
+  'Pass',
+  'Fail',
+];
 
-  const fetchData = useCallback(async () => {
-    const token = localStorage.getItem('adminToken');
+function StatusBadge({ status }) {
+  const cls =
+    status === 'Pass'   ? 'badge-pass'
+    : status === 'Fail' ? 'badge-fail'
+    : 'badge-progress';
+  return <span className={`ad-badge ${cls}`}>{status}</span>;
+}
 
-    // If token is missing, kick out (prevents useless requests)
-    if (!token) {
-      navigate('/admin');
-      return;
-    }
+function PhotoUploadModal({ property, onClose, onSuccess }) {
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState(property.deficiency_photo_url || null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState('');
+  const inputRef = useRef();
 
-    try {
-      const [customersRes, propertiesRes] = await Promise.all([
-        axios.get(`${config.apiUrl}/api/admin/customers`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get(`${config.apiUrl}/api/admin/properties`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-      ]);
-
-      setCustomers(customersRes.data.customers);
-      setProperties(propertiesRes.data.properties);
-    } catch (err) {
-      if (err.response?.status === 401) {
-        localStorage.removeItem('adminToken');
-        navigate('/admin');
-      }
-    }
-  }, [navigate]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('adminToken');
-    navigate('/admin');
+  const handleFile = (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    setFile(f);
+    setPreview(URL.createObjectURL(f));
+    setError('');
   };
 
-  const handleFileSelect = (e) => {
-    setSelectedFile(e.target.files[0]);
-    setUploadStatus('');
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const f = e.dataTransfer.files[0];
+    if (!f) return;
+    setFile(f);
+    setPreview(URL.createObjectURL(f));
+    setError('');
   };
 
   const handleUpload = async () => {
-    if (!selectedFile) {
-      setUploadStatus('Please select a CSV file first');
-      return;
-    }
-
-    const token = localStorage.getItem('adminToken');
-    const formData = new FormData();
-    formData.append('csvFile', selectedFile);
-
-    setLoading(true);
-    setUploadStatus('');
-
+    if (!file) return;
+    setUploading(true);
+    setError('');
     try {
-      const response = await axios.post(
-        `${config.apiUrl}/api/admin/upload-csv`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
-          }
-        }
-      );
-
-      setUploadStatus(
-        `✓ Success! Imported ${response.data.customersImported} customers and ${response.data.propertiesImported} properties`
-      );
-      setSelectedFile(null);
-      fetchData(); // Refresh data
+      const token = sessionStorage.getItem('adminToken');
+      const formData = new FormData();
+      formData.append('photo', file);
+      formData.append('rowId', property.id);
+      const res = await axios.post(`${config.apiUrl}/api/admin/upload-photo`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` },
+      });
+      onSuccess(property.id, res.data.photoUrl);
+      onClose();
     } catch (err) {
-      setUploadStatus('✗ Error uploading file. Please check format and try again.');
+      setError(err.response?.data?.error || 'Upload failed. Please try again.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <div>
+            <h3 className="modal-title">Deficiency Photo</h3>
+            <p className="modal-subtitle">{property.address}</p>
+          </div>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="drop-zone" onDrop={handleDrop} onDragOver={(e) => e.preventDefault()} onClick={() => inputRef.current.click()}>
+          {preview ? (
+            <img src={preview} alt="Preview" className="drop-preview" />
+          ) : (
+            <div className="drop-placeholder">
+              <span className="drop-icon">📷</span>
+              <span className="drop-label">Drop image here or click to browse</span>
+              <span className="drop-hint">JPG, PNG, WEBP, HEIC · max 15 MB</span>
+            </div>
+          )}
+          <input ref={inputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFile} />
+        </div>
+        {error && <p className="modal-error">{error}</p>}
+        <div className="modal-actions">
+          <button className="btn-secondary" onClick={onClose}>Cancel</button>
+          <button className="btn-primary" onClick={handleUpload} disabled={!file || uploading}>
+            {uploading ? 'Uploading…' : 'Upload Photo'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StatusUpdateModal({ property, onClose, onSuccess }) {
+  const [selected, setSelected] = useState(property.current_status);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSave = async () => {
+    if (selected === property.current_status) { onClose(); return; }
+    setSaving(true);
+    setError('');
+    try {
+      const token = sessionStorage.getItem('adminToken');
+      await axios.patch(
+        `${config.apiUrl}/api/admin/properties/${property.id}/status`,
+        { status: selected },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      onSuccess(property.id, selected);
+      onClose();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Update failed.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <div>
+            <h3 className="modal-title">Update Status</h3>
+            <p className="modal-subtitle">{property.address}</p>
+          </div>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="stage-picker">
+          {STAGES.map((stage) => (
+            <button
+              key={stage}
+              className={`stage-option ${selected === stage ? 'stage-option-active' : ''}`}
+              onClick={() => setSelected(stage)}
+            >
+              {stage}
+            </button>
+          ))}
+        </div>
+        {error && <p className="modal-error">{error}</p>}
+        <div className="modal-actions">
+          <button className="btn-secondary" onClick={onClose}>Cancel</button>
+          <button className="btn-primary" onClick={handleSave} disabled={saving || selected === property.current_status}>
+            {saving ? 'Saving…' : 'Save Status'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function AdminDashboard() {
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading]       = useState(true);
+  const [error, setError]           = useState('');
+  const [search, setSearch]         = useState('');
+  const [filterStatus, setFilterStatus] = useState('All');
+  const [photoModal, setPhotoModal]   = useState(null);
+  const [statusModal, setStatusModal] = useState(null);
+
+  useEffect(() => { fetchProperties(); }, []);
+
+  const fetchProperties = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const token = sessionStorage.getItem('adminToken');
+      const res = await axios.get(`${config.apiUrl}/api/admin/properties`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setProperties(res.data.properties || res.data);
+    } catch (err) {
+      setError('Failed to load properties. Check your connection.');
     } finally {
       setLoading(false);
     }
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Pass': return 'status-pass';
-      case 'Fail': return 'status-fail';
-      case 'Submitted to City': return 'status-submitted';
-      case 'Certificate Processing': return 'status-processing';
-      case 'Surveyed': return 'status-surveyed';
-      case 'Request Received': return 'status-received';
-      default: return '';
-    }
+  const handlePhotoSuccess = (rowId, photoUrl) => {
+    setProperties((prev) => prev.map((p) => p.id === rowId ? { ...p, deficiency_photo_url: photoUrl } : p));
+  };
+
+  const handleStatusSuccess = (rowId, newStatus) => {
+    setProperties((prev) => prev.map((p) =>
+      p.id === rowId ? { ...p, current_status: newStatus } : p
+    ));
+  };
+
+  const filtered = properties.filter((p) => {
+    const matchesSearch =
+      !search ||
+      p.address?.toLowerCase().includes(search.toLowerCase()) ||
+      p.customer_code?.toLowerCase().includes(search.toLowerCase()) ||
+      p.company_name?.toLowerCase().includes(search.toLowerCase());
+    const matchesStatus = filterStatus === 'All' || p.current_status === filterStatus;
+    return matchesSearch && matchesStatus;
+  });
+
+  const stats = {
+    total:  properties.length,
+    active: properties.filter((p) => p.current_status !== 'Pass' && p.current_status !== 'Fail').length,
+    pass:   properties.filter((p) => p.current_status === 'Pass').length,
+    fail:   properties.filter((p) => p.current_status === 'Fail').length,
   };
 
   return (
-    <div className="admin-dashboard-container">
-      {/* Navbar */}
-      <nav className="navbar">
-        <div className="navbar-left">
-          <h2 className="navbar-title">VNCO SURVEYS</h2>
-          <span className="navbar-subtitle">Admin Dashboard</span>
-        </div>
-        <div className="navbar-right">
-          <span className="admin-badge-nav">Admin</span>
-          <button className="logout-btn" onClick={handleLogout}>
-            Logout
+    <div className="ad-root">
+      {/* Nav */}
+      <nav className="ad-nav">
+        <div className="ad-nav-brand">VNCO SURVEYS · Admin</div>
+        <div className="ad-nav-right">
+          <button className="ad-refresh-btn" onClick={fetchProperties}>↺ Refresh</button>
+          <button className="ad-logout-btn" onClick={() => { sessionStorage.removeItem('adminToken'); window.location.href = '/admin'; }}>
+            Log out
           </button>
         </div>
       </nav>
 
-      {/* Main Content */}
-      <div className="admin-content">
-        {/* Tabs */}
-        <div className="tabs">
-          <button
-            className={`tab ${activeTab === 'upload' ? 'active' : ''}`}
-            onClick={() => setActiveTab('upload')}
-          >
-            📤 Upload CSV
-          </button>
-          <button
-            className={`tab ${activeTab === 'properties' ? 'active' : ''}`}
-            onClick={() => setActiveTab('properties')}
-          >
-            📋 View Properties ({properties.length})
-          </button>
+      <div className="ad-content">
+
+        {/* Stats */}
+        <div className="ad-stats-row">
+          <div className="ad-stat"><span className="ad-stat-num">{stats.total}</span><span className="ad-stat-label">Total</span></div>
+          <div className="ad-stat"><span className="ad-stat-num ad-stat-active">{stats.active}</span><span className="ad-stat-label">In Progress</span></div>
+          <div className="ad-stat"><span className="ad-stat-num ad-stat-pass">{stats.pass}</span><span className="ad-stat-label">Passed</span></div>
+          <div className="ad-stat"><span className="ad-stat-num ad-stat-fail">{stats.fail}</span><span className="ad-stat-label">Failed</span></div>
         </div>
 
-        {/* Upload Tab */}
-        {activeTab === 'upload' && (
-          <div className="tab-content">
-            <div className="upload-section">
-              <h2>Upload CSV File</h2>
-              <p className="section-description">
-                Upload a CSV file to update customer and property data. The file should include columns:
-                customer_code, company_name, address, service_type, order_date, current_status, status_history, has_deficiency, deficiency_photo_url, attempt_number
-              </p>
+        {/* Search + dropdown filter on one row */}
+        <div className="ad-filters">
+          <input
+            className="ad-search"
+            placeholder="Search address, code, or company…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <select
+            className="ad-filter-select"
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+          >
+            <option value="All">All Statuses</option>
+            {STAGES.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+        </div>
 
-              <div className="upload-box">
-                <input
-                  type="file"
-                  accept=".csv"
-                  onChange={handleFileSelect}
-                  id="csv-upload"
-                  className="file-input"
-                />
-                <label htmlFor="csv-upload" className="file-label">
-                  {selectedFile ? (
-                    <div className="file-selected">
-                      <span className="file-icon">📄</span>
-                      <span className="file-name">{selectedFile.name}</span>
-                    </div>
-                  ) : (
-                    <div className="file-placeholder">
-                      <span className="upload-icon">📁</span>
-                      <span>Click to select CSV file</span>
-                    </div>
-                  )}
-                </label>
-              </div>
-
-              {uploadStatus && (
-                <div className={`upload-status ${uploadStatus.includes('✓') ? 'success' : 'error'}`}>
-                  {uploadStatus}
-                </div>
-              )}
-
-              <button
-                className="upload-btn"
-                onClick={handleUpload}
-                disabled={loading || !selectedFile}
-              >
-                {loading ? 'Uploading...' : 'Upload and Import'}
-              </button>
-
-              <div className="stats-grid">
-                <div className="stat-card">
-                  <div className="stat-number">{customers.length}</div>
-                  <div className="stat-label">Total Customers</div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-number">{properties.length}</div>
-                  <div className="stat-label">Total Properties</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Properties Tab */}
-        {activeTab === 'properties' && (
-          <div className="tab-content">
-            <div className="properties-section">
-              <h2>All Properties</h2>
-
-              <div className="table-container">
-                <table className="property-table">
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>Customer</th>
-                      <th>Address</th>
-                      <th>Service Type</th>
-                      <th>Order Date</th>
-                      <th>Current Status</th>
-                      <th>Attempt</th>
-                      <th>Deficiency</th>
+        {/* Table */}
+        {loading ? (
+          <div className="ad-loading">Loading properties…</div>
+        ) : error ? (
+          <div className="ad-error">{error}</div>
+        ) : (
+          <div className="ad-table-wrapper">
+            <table className="ad-table">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Company</th>
+                  <th>Address</th>
+                  <th>Service</th>
+                  <th>Status</th>
+                  <th>Deficiency</th>
+                  <th>Photo</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.length === 0 ? (
+                  <tr><td colSpan={8} className="ad-empty">No properties match your search.</td></tr>
+                ) : (
+                  filtered.map((p) => (
+                    <tr key={p.id}>
+                      <td className="ad-code">{p.customer_code}</td>
+                      <td>{p.company_name}</td>
+                      <td className="ad-address-cell">{p.address}</td>
+                      <td className="ad-service">{p.service_type}</td>
+                      <td><StatusBadge status={p.current_status} /></td>
+                      <td className="ad-center">
+                        {p.has_deficiency ? <span>⚠️</span> : <span className="ad-none">—</span>}
+                      </td>
+                      <td className="ad-center">
+                        {p.deficiency_photo_url ? (
+                          <a href={p.deficiency_photo_url} target="_blank" rel="noreferrer" className="ad-photo-link">View</a>
+                        ) : (
+                          <span className="ad-none">—</span>
+                        )}
+                      </td>
+                      <td>
+                        <div className="ad-action-btns">
+                          <button className="ad-action-btn" onClick={() => setStatusModal(p)}>Update Status</button>
+                          {p.has_deficiency && (
+                            <button className="ad-action-btn ad-photo-btn" onClick={() => setPhotoModal(p)}>
+                              {p.deficiency_photo_url ? 'Replace Photo' : 'Upload Photo'}
+                            </button>
+                          )}
+                        </div>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {properties.map((property) => (
-                      <tr key={property.id}>
-                        <td>{property.id}</td>
-                        <td className="customer-cell">
-                          <div className="customer-name">
-                            {customers.find(c => c.customer_code === property.customer_code)?.company_name || 'Unknown'}
-                          </div>
-                          <div className="customer-code-small">{property.customer_code}</div>
-                        </td>
-                        <td className="address-cell">{property.address}</td>
-                        <td>{property.service_type}</td>
-                        <td>{property.order_date}</td>
-                        <td>
-                          <span className={`status-badge ${getStatusColor(property.current_status)}`}>
-                            {property.current_status}
-                          </span>
-                        </td>
-                        <td>{property.attempt_number}</td>
-                        <td>{property.has_deficiency ? 'Yes' : '—'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-            </div>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
+
+      {photoModal  && <PhotoUploadModal  property={photoModal}  onClose={() => setPhotoModal(null)}  onSuccess={handlePhotoSuccess} />}
+      {statusModal && <StatusUpdateModal property={statusModal} onClose={() => setStatusModal(null)} onSuccess={handleStatusSuccess} />}
     </div>
   );
-};
-
-export default AdminDashboard;
+}
