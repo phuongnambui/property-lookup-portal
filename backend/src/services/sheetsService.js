@@ -143,6 +143,16 @@ async function updatePropertyStatus(rowId, newStatus) {
     valueInputOption: 'RAW',
     requestBody:   { values: [[canonical]] },
   });
+
+  // If passed, auto-clear has_deficiency and photo URL in the Sheet
+  if (canonical.toLowerCase() === 'passed') {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SHEET_ID,
+      range:         `${SHEET_NAME}!G${sheetRow}:H${sheetRow}`,
+      valueInputOption: 'RAW',
+      requestBody:   { values: [['' , '']] },
+    });
+  }
 }
 
 module.exports = {
