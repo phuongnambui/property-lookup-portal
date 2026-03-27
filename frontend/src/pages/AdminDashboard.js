@@ -6,17 +6,21 @@ import './AdminDashboard.css';
 
 const STAGES = [
   'Request Received',
-  'Surveyed',
-  'Certificate Processing',
+  'Processing',
   'Submitted to City',
-  'Pass',
-  'Fail',
+  'Passed',
+  'Failed',
 ];
 
+function normalise(status) {
+  return (status || '').trim().toLowerCase();
+}
+
 function StatusBadge({ status }) {
+  const n = normalise(status);
   const cls =
-    status === 'Pass'   ? 'badge-pass'
-    : status === 'Fail' ? 'badge-fail'
+    n === 'passed'  ? 'badge-pass'
+    : n === 'failed' ? 'badge-fail'
     : 'badge-progress';
   return <span className={`ad-badge ${cls}`}>{status}</span>;
 }
@@ -216,7 +220,13 @@ export default function AdminDashboard() {
     <div className="ad-root">
       {/* Nav */}
       <nav className="ad-nav">
-        <div className="ad-nav-brand">VNCO SURVEYS · Admin</div>
+        <img
+          src="/images/logo.png"
+          alt="VNCO SURVEYS"
+          className="ad-nav-logo"
+          onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }}
+        />
+        <span className="ad-nav-brand" style={{display:'none'}}>VNCO SURVEYS · Admin</span>
         <div className="ad-nav-right">
           <button className="ad-refresh-btn" onClick={fetchProperties}>↺ Refresh</button>
           <button className="ad-logout-btn" onClick={() => { sessionStorage.removeItem('adminToken'); window.location.href = '/admin'; }}>
@@ -287,10 +297,14 @@ export default function AdminDashboard() {
                       <td className="ad-service">{p.service_type}</td>
                       <td><StatusBadge status={p.current_status} /></td>
                       <td className="ad-center">
-                        {p.has_deficiency ? <span>⚠️</span> : <span className="ad-none">—</span>}
+                        {p.has_deficiency && normalise(p.current_status) !== 'passed' ? (
+                          <span>⚠️</span>
+                        ) : (
+                          <span className="ad-none">—</span>
+                        )}
                       </td>
                       <td className="ad-center">
-                        {p.deficiency_photo_url ? (
+                        {p.deficiency_photo_url && normalise(p.current_status) !== 'passed' ? (
                           <a href={p.deficiency_photo_url} target="_blank" rel="noreferrer" className="ad-photo-link">View</a>
                         ) : (
                           <span className="ad-none">—</span>
