@@ -1,18 +1,57 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import config from '../config';
 import './CustomerDashboard.css';
 
 const FILTERS = ['All', 'In Progress', 'Completed'];
 
+function normalise(status) {
+  return (status || '').trim().toLowerCase();
+}
+
+function isCompleted(status) {
+  const n = normalise(status);
+  return n === 'passed' || n === 'failed';
+}
+
+function getStatusColor(status) {
+  const n = normalise(status);
+  if (n === 'passed')           return 'status-pass';
+  if (n === 'failed')           return 'status-fail';
+  if (n === 'submitted to city') return 'status-submitted';
+  if (n === 'processing')        return 'status-processing';
+  if (n === 'request received')  return 'status-received';
+  return '';
+}
+
 const CustomerDashboard = () => {
   const [customerData, setCustomerData] = useState(null);
-  const [filter, setFilter] = useState('All');
+  const [loading, setLoading]           = useState(true);
+  const [filter, setFilter]             = useState('All');
   const navigate = useNavigate();
 
   useEffect(() => {
-    const data = sessionStorage.getItem('customerData');
-    if (!data) { navigate('/'); return; }
-    setCustomerData(JSON.parse(data));
+    const code = sessionStorage.getItem('customerCode');
+    if (!code) { navigate('/'); return; }
+
+    // Always fetch fresh from API — never rely on cached sessionStorage data
+    axios.get(`${config.apiUrl}/api/customer/${code}`)
+      .then((res) => {
+        setCustomerData(res.data);
+        // Update sessionStorage with fresh data
+        sessionStorage.setItem('customerData', JSON.stringify(res.data));
+      })
+      .catch(() => {
+        // If fetch fails, fall back to cached data
+        const cached = sessionStorage.getItem('customerData');
+        if (cached) {
+          setCustomerData(JSON.parse(cached));
+        } else {
+          navigate('/');
+        }
+      })
+      .finally(() => setLoading(false));
   }, [navigate]);
 
   const handleLogout = () => {
@@ -27,20 +66,6 @@ const CustomerDashboard = () => {
     navigate(`/property/${property.id}`);
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Pass':                   return 'status-pass';
-      case 'Fail':                   return 'status-fail';
-      case 'Submitted to City':      return 'status-submitted';
-      case 'Certificate Processing': return 'status-processing';
-      case 'Surveyed':               return 'status-surveyed';
-      case 'Request Received':       return 'status-received';
-      default: return '';
-    }
-  };
-
-  const isCompleted = (status) => status === 'Pass' || status === 'Fail';
-
   const filteredProperties = customerData?.properties.filter((p) => {
     if (filter === 'All')         return true;
     if (filter === 'Completed')   return isCompleted(p.current_status);
@@ -48,7 +73,11 @@ const CustomerDashboard = () => {
     return true;
   }) || [];
 
+  if (loading) return <div className="dashboard-loading">Loading…</div>;
   if (!customerData) return null;
+
+  const companyName = customerData.company_name || customerData.customer?.company_name;
+  const customerCode = customerData.customer_code || customerData.customer?.customer_code;
 
   return (
     <div className="dashboard-container">
@@ -56,12 +85,17 @@ const CustomerDashboard = () => {
       {/* Navbar */}
       <nav className="navbar">
         <div className="navbar-left">
-          <h2 className="navbar-title">VNCO SURVEYS</h2>
+          <img
+            src="/images/logo.png"
+            alt="VNCO SURVEYS"
+            className="navbar-logo"
+            onError={(e) => { e.target.style.display='none'; }}
+          />
           <span className="navbar-subtitle">Property Lookup Portal</span>
         </div>
         <div className="navbar-right">
-          <span className="customer-name">{customerData.customer?.company_name || customerData.company_name}</span>
-          <span className="customer-code">{customerData.customer?.customer_code || customerData.customer_code}</span>
+          <span className="customer-name">{companyName}</span>
+          <span className="customer-code">{customerCode}</span>
           <button className="logout-btn" onClick={handleLogout}>Logout</button>
         </div>
       </nav>
@@ -74,7 +108,6 @@ const CustomerDashboard = () => {
             <p>{filteredProperties.length} of {customerData.properties.length} properties</p>
           </div>
 
-          {/* Filter tabs */}
           <div className="filter-tabs">
             {FILTERS.map((f) => (
               <button
@@ -93,7 +126,6 @@ const CustomerDashboard = () => {
           </div>
         </div>
 
-        {/* Property Table */}
         <div className="table-container">
           <table className="property-table">
             <thead>
@@ -132,10 +164,7 @@ const CustomerDashboard = () => {
                       )}
                     </td>
                     <td>
-                      <button
-                        className="view-btn"
-                        onClick={() => handlePropertyClick(property)}
-                      >
+                      <button className="view-btn" onClick={() => handlePropertyClick(property)}>
                         View Timeline
                       </button>
                     </td>

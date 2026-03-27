@@ -1,53 +1,47 @@
 /* PropertyDetail.css */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-.pd-root {
-  min-height: 100vh;
-  background: #f8f9fa;
-  font-family: 'Inter', sans-serif;
-}
+.pd-root { min-height: 100vh; font-family: 'Inter', sans-serif; }
 
 /* ── Navbar ───────────────────────────────────────────────────── */
 .pd-nav {
-  background: #dc2626;
+  background: #ffffff;
   padding: 0 24px;
   height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
   position: sticky;
   top: 0;
   z-index: 100;
 }
 
-.pd-nav-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+.pd-nav-left { display: flex; align-items: center; gap: 16px; }
+
+.pd-nav-logo {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
 }
 
 .pd-nav-brand {
-  color: white;
+  color: #dc2626;
   font-size: 20px;
   font-weight: 700;
   letter-spacing: 0.05em;
 }
 
 .pd-nav-client {
-  color: rgba(255,255,255,0.85);
+  color: #6b7280;
   font-size: 14px;
-  font-weight: 500;
+  white-space: nowrap;
 }
 
 .pd-back-btn {
-  background: white;
+  background: #fee2e2;
   color: #dc2626;
   border: none;
   padding: 8px 16px;
@@ -58,26 +52,20 @@
   font-family: 'Inter', sans-serif;
   transition: all 0.2s;
 }
-.pd-back-btn:hover { background: #fee2e2; }
+.pd-back-btn:hover { background: #fecaca; }
 
 /* ── Hero ─────────────────────────────────────────────────────── */
 .pd-hero {
-  background: white;
+  background: rgba(255,255,255,0.92);
   padding: 32px 24px 28px;
   border-bottom: 3px solid #dc2626;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  backdrop-filter: blur(4px);
 }
 
-.pd-hero-inner {
-  max-width: 900px;
-  margin: 0 auto;
-}
+.pd-hero-inner { max-width: 900px; margin: 0 auto; }
 
-.pd-hero-meta {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 12px;
-}
+.pd-hero-meta { display: flex; gap: 10px; margin-bottom: 12px; }
 
 .pd-service-tag {
   font-size: 11px;
@@ -136,10 +124,11 @@
 
 /* ── Cards ────────────────────────────────────────────────────── */
 .pd-card {
-  background: white;
+  background: rgba(255,255,255,0.92);
   border-radius: 12px;
   padding: 28px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  backdrop-filter: blur(4px);
 }
 
 .pd-card-title {
@@ -152,15 +141,12 @@
 }
 
 /* ── Timeline ─────────────────────────────────────────────────── */
-.tl-wrapper {
-  overflow-x: auto;
-  padding-bottom: 4px;
-}
+.tl-wrapper { overflow-x: auto; padding-bottom: 4px; }
 
 .tl-track {
   display: flex;
   align-items: flex-start;
-  min-width: 480px;
+  min-width: 420px;
   padding: 8px 0 16px;
 }
 
@@ -170,7 +156,7 @@
   align-items: center;
   gap: 10px;
   flex: 0 0 auto;
-  width: 88px;
+  width: 100px;
   position: relative;
 }
 
@@ -188,39 +174,22 @@
   transition: all 0.2s;
 }
 
-/* Completed — green like old UI */
-.tl-completed .tl-circle {
-  background: #16a34a;
-  border: 2px solid #16a34a;
-  color: white;
-}
+.tl-completed .tl-circle { background: #16a34a; border: 2px solid #16a34a; color: white; }
+.tl-current   .tl-circle { background: #dc2626; border: 2px solid #dc2626; color: white; box-shadow: 0 0 0 5px rgba(220,38,38,0.15); }
+.tl-pending   .tl-circle { background: white; border: 2px solid #d1d5db; color: #d1d5db; }
+.tl-pass      .tl-circle { background: #16a34a; border: 2px solid #16a34a; color: white; }
+.tl-fail      .tl-circle { background: #dc2626; border: 2px solid #dc2626; color: white; }
 
-/* Current — red to match brand */
-.tl-current .tl-circle {
-  background: #f59e0b;
-  border: 2px solid #f59e0b;
-  color: white;
-  box-shadow: 0 0 0 5px rgba(245, 158, 11, 0.15);
-}
-
-/* Pending */
-.tl-pending .tl-circle {
-  background: white;
-  border: 2px solid #d1d5db;
-  color: #d1d5db;
-}
-
-/* Fail */
-.tl-fail .tl-circle {
-  background: #dc2626;
-  border: 2px solid #dc2626;
-  color: white;
-}
-
-/* Pulse on current */
 .tl-pulse {
-  background: rgba(245, 158, 11, 0.2);
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(220,38,38,0.2);
   animation: pulse 2s ease-in-out infinite;
+  z-index: 1;
 }
 @keyframes pulse {
   0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.7; }
@@ -235,10 +204,10 @@
   color: #9ca3af;
 }
 .tl-completed .tl-label { color: #1f2937; font-weight: 600; }
-.tl-current .tl-label { color: #b45309; font-weight: 700; }
+.tl-current   .tl-label { color: #dc2626; font-weight: 700; }
+.tl-pass      .tl-label { color: #15803d; font-weight: 700; }
 .tl-fail      .tl-label { color: #dc2626; font-weight: 700; }
 
-/* Connectors */
 .tl-connector {
   flex: 1;
   height: 3px;
@@ -249,9 +218,7 @@
 .tl-conn-pending { border-top: 2px dashed #e5e7eb; background: transparent; height: 0; margin-top: 21px; }
 
 /* ── Deficiency card ──────────────────────────────────────────── */
-.pd-deficiency-card {
-  border-left: 4px solid #f59e0b;
-}
+.pd-deficiency-card { border-left: 4px solid #f59e0b; }
 
 .pd-deficiency-header {
   display: flex;
@@ -259,19 +226,8 @@
   margin-bottom: 20px;
   align-items: flex-start;
 }
-
-.pd-def-icon {
-  font-size: 26px;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.pd-def-note {
-  font-size: 14px;
-  color: #6b7280;
-  line-height: 1.6;
-  margin: 4px 0 0;
-}
+.pd-def-icon { font-size: 26px; flex-shrink: 0; margin-top: 2px; }
+.pd-def-note { font-size: 14px; color: #6b7280; line-height: 1.6; margin: 4px 0 0; }
 
 .pd-photo-wrap {
   border-radius: 8px;
@@ -302,18 +258,9 @@
 .pd-no-photo { font-size: 13px; color: #9ca3af; font-style: italic; }
 
 /* ── Details grid ─────────────────────────────────────────────── */
-.pd-details-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-}
+.pd-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 
-.pd-detail-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
+.pd-detail-item  { display: flex; flex-direction: column; gap: 4px; }
 .pd-detail-label {
   font-size: 11px;
   font-weight: 600;
@@ -321,12 +268,7 @@
   text-transform: uppercase;
   color: #9ca3af;
 }
-
-.pd-detail-value {
-  font-size: 15px;
-  font-weight: 600;
-  color: #1f2937;
-}
+.pd-detail-value { font-size: 15px; font-weight: 600; color: #1f2937; }
 
 /* ── Responsive ───────────────────────────────────────────────── */
 @media (max-width: 600px) {

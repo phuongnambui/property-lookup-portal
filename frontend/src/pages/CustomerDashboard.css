@@ -1,77 +1,68 @@
 /* CustomerDashboard.css */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-body {
-  font-family: 'Inter', sans-serif;
-}
-
-.dashboard-container {
-  min-height: 100vh;
-  background: #f8f9fa;
-}
+.dashboard-container { min-height: 100vh; }
 
 /* ── Navbar ───────────────────────────────────────────────────── */
 .navbar {
-  background: #dc2626;
+  background: #ffffff;
   padding: 0 24px;
   height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
-.navbar-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+.navbar-left { display: flex; align-items: center; gap: 16px; }
+
+.navbar-logo {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
 }
 
 .navbar-title {
-  color: white;
+  color: #dc2626;
   font-size: 20px;
   font-weight: 700;
   letter-spacing: 0.05em;
 }
 
 .navbar-subtitle {
-  color: rgba(255, 255, 255, 0.75);
+  color: #6b7280;
   font-size: 14px;
-  border-left: 1px solid rgba(255,255,255,0.3);
+  border-left: 1px solid #e5e7eb;
   padding-left: 16px;
 }
 
-.navbar-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+.navbar-right { display: flex; align-items: center; gap: 12px; }
 
 .customer-name {
-  color: white;
+  color: #1f2937;
   font-weight: 600;
   font-size: 14px;
+  white-space: nowrap;
 }
 
 .customer-code {
-  background: rgba(255,255,255,0.2);
-  color: white;
+  background: #fee2e2;
+  color: #dc2626;
   padding: 4px 12px;
   border-radius: 20px;
   font-size: 13px;
   font-weight: 600;
-  white-space: nowrap
+  white-space: nowrap;
 }
 
 .logout-btn {
-  background: white;
-  color: #dc2626;
+  background: #dc2626;
+  color: white;
   border: none;
   padding: 8px 18px;
   border-radius: 8px;
@@ -81,9 +72,7 @@ body {
   font-family: 'Inter', sans-serif;
   transition: all 0.2s;
 }
-.logout-btn:hover {
-  background: #fee2e2;
-}
+.logout-btn:hover { background: #b91c1c; }
 
 /* ── Content ──────────────────────────────────────────────────── */
 .dashboard-content {
@@ -109,16 +98,10 @@ body {
   margin-bottom: 4px;
 }
 
-.dashboard-header p {
-  color: #6b7280;
-  font-size: 14px;
-}
+.dashboard-header p { color: #6b7280; font-size: 14px; }
 
 /* Filter tabs */
-.filter-tabs {
-  display: flex;
-  gap: 8px;
-}
+.filter-tabs { display: flex; gap: 8px; }
 
 .filter-tab {
   display: flex;
@@ -127,7 +110,7 @@ body {
   padding: 8px 16px;
   border-radius: 20px;
   border: 1px solid #e5e7eb;
-  background: white;
+  background: rgba(255,255,255,0.8);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -135,15 +118,8 @@ body {
   color: #6b7280;
   font-family: 'Inter', sans-serif;
 }
-.filter-tab:hover {
-  border-color: #dc2626;
-  color: #dc2626;
-}
-.filter-tab-active {
-  background: #dc2626;
-  border-color: #dc2626;
-  color: white;
-}
+.filter-tab:hover { border-color: #dc2626; color: #dc2626; }
+.filter-tab-active { background: #dc2626; border-color: #dc2626; color: white; }
 
 .filter-count {
   background: rgba(0,0,0,0.12);
@@ -152,16 +128,15 @@ body {
   font-size: 11px;
   font-weight: 700;
 }
-.filter-tab-active .filter-count {
-  background: rgba(255,255,255,0.25);
-}
+.filter-tab-active .filter-count { background: rgba(255,255,255,0.25); }
 
 /* ── Table ────────────────────────────────────────────────────── */
 .table-container {
-  background: white;
+  background: rgba(255,255,255,0.92);
   border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.08);
   overflow: hidden;
+  backdrop-filter: blur(4px);
 }
 
 .property-table {
@@ -170,13 +145,11 @@ body {
   font-size: 14px;
 }
 
-.property-table thead tr {
-  background: #1f2937;
-}
+.property-table thead tr { background: #1f2937; }
 
 .property-table th {
   padding: 14px 16px;
-  text-align: left;
+  text-align: center;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -189,21 +162,13 @@ body {
   border-bottom: 1px solid #f3f4f6;
   color: #374151;
   vertical-align: middle;
+  text-align: center;
 }
 
-.property-table tbody tr:last-child td {
-  border-bottom: none;
-}
+.property-table tbody tr:last-child td { border-bottom: none; }
+.property-table tbody tr:hover { background: rgba(254,249,249,0.8); }
 
-.property-table tbody tr:hover {
-  background: #fef9f9;
-}
-
-.address-cell {
-  font-weight: 500;
-  color: #1f2937;
-  max-width: 220px;
-}
+.address-cell { font-weight: 500; color: #1f2937; max-width: 220px; }
 
 /* ── Status badges ────────────────────────────────────────────── */
 .status-badge {
@@ -214,15 +179,13 @@ body {
   font-weight: 600;
   white-space: nowrap;
 }
-
 .status-pass        { background: #d1fae5; color: #065f46; }
 .status-fail        { background: #fee2e2; color: #991b1b; }
 .status-submitted   { background: #dbeafe; color: #1e40af; }
 .status-processing  { background: #fef3c7; color: #92400e; }
-.status-surveyed    { background: #ede9fe; color: #5b21b6; }
 .status-received    { background: #f3f4f6; color: #374151; }
 
-/* ── Deficiency column ────────────────────────────────────────── */
+/* ── Deficiency ───────────────────────────────────────────────── */
 .deficiency-cell  { text-align: center; }
 .deficiency-flag  { font-size: 13px; color: #d97706; font-weight: 600; }
 .no-deficiency    { color: #d1d5db; }
@@ -241,16 +204,23 @@ body {
   transition: all 0.2s;
   white-space: nowrap;
 }
-.view-btn:hover {
-  background: #b91c1c;
-}
+.view-btn:hover { background: #b91c1c; }
 
-/* ── Empty state ──────────────────────────────────────────────── */
 .empty-row {
   text-align: center;
   padding: 48px !important;
   color: #9ca3af;
   font-size: 14px;
+}
+
+.dashboard-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  font-size: 16px;
+  color: #6b7280;
+  font-family: 'Inter', sans-serif;
 }
 
 /* ── Responsive ───────────────────────────────────────────────── */

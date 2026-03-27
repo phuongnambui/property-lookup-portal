@@ -18,27 +18,35 @@ function getSheetsClient() {
 const SHEET_ID   = process.env.GOOGLE_SHEET_ID;
 const SHEET_NAME = 'Sheet1';
 
-// ─── Actual Sheet columns ─────────────────────────────────────────
+// ─── Sheet columns ────────────────────────────────────────────────
 //  A: customer_code
 //  B: company_name
 //  C: address
 //  D: service_type
 //  E: current_status
 //  F: submission_date
-//  G: has_deficiency       TRUE or FALSE
+//  G: has_deficiency       TRUE or empty
 //  H: deficiency_photo_url
 //  I: attempt_number
 
 const DATA_RANGE = `${SHEET_NAME}!A2:I`;
 
+// Canonical status names — these are what get stored in the sheet
 const VALID_STATUSES = [
   'Request Received',
-  'Surveyed',
-  'Certificate Processing',
+  'Processing',
   'Submitted to City',
-  'Pass',
-  'Fail',
+  'Passed',
+  'Failed',
 ];
+
+// Normalise whatever the brother types into canonical form
+function normaliseStatus(raw) {
+  if (!raw) return '';
+  const lower = raw.trim().toLowerCase();
+  const match = VALID_STATUSES.find((s) => s.toLowerCase() === lower);
+  return match || raw.trim(); // return original if no match (don't silently drop)
+}
 
 function parseRow(row, rowIndex) {
   const [
@@ -46,23 +54,31 @@ function parseRow(row, rowIndex) {
     company_name         = '',
     address              = '',
     service_type         = '',
-    current_status       = '',
+    current_status_raw   = '',
     submission_date      = '',
-    has_deficiency_raw   = 'FALSE',
+    has_deficiency_raw   = '',
     deficiency_photo_url = '',
     attempt_number_raw   = '1',
   ] = row;
 
+  const current_status = normaliseStatus(current_status_raw);
+
+  // has_deficiency: TRUE (any case) = true, anything else (empty, FALSE, etc.) = false
+  const has_deficiency = has_deficiency_raw?.toString().toUpperCase() === 'TRUE';
+
+  // If passed, never show deficiency regardless of sheet value
+  const isPassed = current_status.toLowerCase() === 'passed';
+
   return {
-    id:                   rowIndex, // 1-based (row 2 = id 1)
+    id:                   rowIndex,
     customer_code:        customer_code.trim(),
     company_name:         company_name.trim(),
     address:              address.trim(),
     service_type:         service_type.trim(),
-    current_status:       current_status.trim(),
+    current_status,
     submission_date:      submission_date.trim(),
-    has_deficiency:       has_deficiency_raw?.toString().toUpperCase() === 'TRUE',
-    deficiency_photo_url: deficiency_photo_url.trim(),
+    has_deficiency:       isPassed ? false : has_deficiency,
+    deficiency_photo_url: isPassed ? '' : deficiency_photo_url.trim(),
     attempt_number:       parseInt(attempt_number_raw, 10) || 1,
   };
 }
@@ -111,9 +127,10 @@ async function updatePhotoUrl(rowId, photoUrl) {
   });
 }
 
-// Update current_status 
+// Update current_status — column E, normalise before writing
 async function updatePropertyStatus(rowId, newStatus) {
-  if (!VALID_STATUSES.includes(newStatus)) {
+  const canonical = normaliseStatus(newStatus);
+  if (!VALID_STATUSES.map(s => s.toLowerCase()).includes(canonical.toLowerCase())) {
     throw new Error(`Invalid status: ${newStatus}`);
   }
 
@@ -124,7 +141,7 @@ async function updatePropertyStatus(rowId, newStatus) {
     spreadsheetId: SHEET_ID,
     range:         `${SHEET_NAME}!E${sheetRow}`,
     valueInputOption: 'RAW',
-    requestBody:   { values: [[newStatus]] },
+    requestBody:   { values: [[canonical]] },
   });
 }
 

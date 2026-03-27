@@ -3,52 +3,82 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import './PropertyDetail.css';
 
-// ─── Stage order ──────────────────────────────────────────────────────────────
+// ─── 4 stages + Result node ───────────────────────────────────────────────────
 
 const STAGES = [
-  { key: 'Request Received',       label: 'Request\nReceived' },
-  { key: 'Surveyed',               label: 'Surveyed' },
-  { key: 'Certificate Processing', label: 'Certificate\nProcessing' },
-  { key: 'Submitted to City',      label: 'Submitted\nto City' },
-  { key: 'Pass',                   label: 'Pass' },
+  { key: 'Request Received', label: 'Request\nReceived' },
+  { key: 'Processing',       label: 'Processing' },
+  { key: 'Submitted to City', label: 'Submitted\nto City' },
+  { key: 'Result',           label: 'Result' }, // becomes Passed/Failed
 ];
+
+function normalise(status) {
+  return (status || '').trim().toLowerCase();
+}
+
+function isPassed(status)  { return normalise(status) === 'passed'; }
+function isFailed(status)  { return normalise(status) === 'failed'; }
+function isResult(status)  { return isPassed(status) || isFailed(status); }
 
 // ─── Timeline ─────────────────────────────────────────────────────────────────
 
 function Timeline({ currentStatus }) {
-  const isFail = currentStatus === 'Fail';
-  const currentIndex = STAGES.findIndex((s) => s.key === currentStatus);
-  const displayStages = isFail
-    ? [...STAGES, { key: 'Fail', label: 'Fail' }]
-    : STAGES;
+  const norm = normalise(currentStatus);
 
-    const getState = (stageKey, index) => {
-      if (isFail) return stageKey === 'Fail' ? 'fail' : 'completed';
-      if (index < currentIndex)  return 'completed';
-      if (index === currentIndex) return currentStatus === 'Pass' ? 'completed' : 'current';
-      return 'pending';
-    };
+  // Map normalised status to index in STAGES (0-2), Result = 3
+  const stageKeyMap = {
+    'request received': 0,
+    'processing':       1,
+    'submitted to city': 2,
+    'passed':           3,
+    'failed':           3,
+  };
+
+  const currentIndex = stageKeyMap[norm] ?? -1;
+
+  const getState = (stageKey, index) => {
+    const sk = stageKey.toLowerCase();
+
+    // Result node
+    if (sk === 'result') {
+      if (isPassed(currentStatus)) return 'pass';
+      if (isFailed(currentStatus)) return 'fail';
+      return 'pending'; // not yet reached
+    }
+
+    if (index < currentIndex)  return 'completed';
+    if (index === currentIndex) return 'current';
+    return 'pending';
+  };
 
   return (
     <div className="tl-wrapper">
       <div className="tl-track">
-        {displayStages.map((stage, i) => {
-          const state   = getState(stage.key, i);
-          const isLast  = i === displayStages.length - 1;
-          // connector is "done" if this node AND the next are completed/fail
-          const nextState = !isLast ? getState(displayStages[i + 1].key, i + 1) : null;
-          const connDone  = state === 'completed' && (nextState === 'completed' || nextState === 'current' || nextState === 'fail');
+        {STAGES.map((stage, i) => {
+          const state  = getState(stage.key, i);
+          const isLast = i === STAGES.length - 1;
+          const nextState = !isLast ? getState(STAGES[i + 1].key, i + 1) : null;
+          const connDone  = state === 'completed' &&
+            (nextState === 'completed' || nextState === 'current' ||
+             nextState === 'pass'      || nextState === 'fail');
+
+          // Result node label changes based on outcome
+          const displayLabel =
+            stage.key === 'Result' && isResult(currentStatus)
+              ? (isPassed(currentStatus) ? 'Passed' : 'Failed')
+              : stage.label;
 
           return (
             <React.Fragment key={stage.key}>
               <div className={`tl-node tl-${state}`}>
                 <div className="tl-circle">
                   {state === 'completed' && <span>✓</span>}
+                  {state === 'pass'      && <span>✓</span>}
                   {state === 'fail'      && <span>✕</span>}
                 </div>
                 {state === 'current' && <div className="tl-pulse" />}
                 <div className="tl-label">
-                  {stage.label.split('\n').map((line, j) => (
+                  {displayLabel.split('\n').map((line, j) => (
                     <span key={j}>{line}<br /></span>
                   ))}
                 </div>
@@ -85,9 +115,9 @@ export default function PropertyDetail() {
 
   if (!property || !customerData) return null;
 
-  const isPass   = property.current_status === 'Pass';
-  const isFail   = property.current_status === 'Fail';
-  const badgeCls = isPass ? 'badge-pass' : isFail ? 'badge-fail' : 'badge-progress';
+  const passed   = isPassed(property.current_status);
+  const failed   = isFailed(property.current_status);
+  const badgeCls = passed ? 'badge-pass' : failed ? 'badge-fail' : 'badge-progress';
 
   return (
     <div className="pd-root">
@@ -96,9 +126,16 @@ export default function PropertyDetail() {
       <nav className="pd-nav">
         <div className="pd-nav-left">
           <button className="pd-back-btn" onClick={() => navigate('/dashboard')}>← Back</button>
-          <span className="pd-nav-brand">VNCO SURVEYS</span>
+          <img
+            src="/images/logo.png"
+            alt="VNCO SURVEYS"
+            className="pd-nav-logo"
+            onError={(e) => { e.target.style.display='none'; }}
+          />
         </div>
-        <span className="pd-nav-client">{customerData.customer?.company_name || customerData.company_name}</span>
+        <span className="pd-nav-client">
+          {customerData.customer?.company_name || customerData.company_name}
+        </span>
       </nav>
 
       {/* Hero */}
@@ -123,7 +160,8 @@ export default function PropertyDetail() {
           <Timeline currentStatus={property.current_status} />
         </div>
 
-        {property.has_deficiency && (
+        {/* Only show deficiency if not passed */}
+        {property.has_deficiency && !passed && (
           <div className="pd-card pd-deficiency-card">
             <div className="pd-deficiency-header">
               <span className="pd-def-icon">⚠️</span>
@@ -169,7 +207,7 @@ export default function PropertyDetail() {
             </div>
             <div className="pd-detail-item">
               <span className="pd-detail-label">Deficiency</span>
-              <span className="pd-detail-value">{property.has_deficiency ? 'Yes' : 'No'}</span>
+              <span className="pd-detail-value">{property.has_deficiency && !passed ? 'Yes' : 'No'}</span>
             </div>
           </div>
         </div>
