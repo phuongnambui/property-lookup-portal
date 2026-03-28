@@ -17,8 +17,8 @@ function isCompleted(status) {
 
 function getStatusColor(status) {
   const n = normalise(status);
-  if (n === 'passed')           return 'status-pass';
-  if (n === 'failed')           return 'status-fail';
+  if (n === 'passed')            return 'status-pass';
+  if (n === 'failed')            return 'status-fail';
   if (n === 'submitted to city') return 'status-submitted';
   if (n === 'processing')        return 'status-processing';
   if (n === 'request received')  return 'status-received';
@@ -35,15 +35,12 @@ const CustomerDashboard = () => {
     const code = sessionStorage.getItem('customerCode');
     if (!code) { navigate('/'); return; }
 
-    // Always fetch fresh from API — never rely on cached sessionStorage data
     axios.get(`${config.apiUrl}/api/customer/${code}`)
       .then((res) => {
         setCustomerData(res.data);
-        // Update sessionStorage with fresh data
         sessionStorage.setItem('customerData', JSON.stringify(res.data));
       })
       .catch(() => {
-        // If fetch fails, fall back to cached data
         const cached = sessionStorage.getItem('customerData');
         if (cached) {
           setCustomerData(JSON.parse(cached));
@@ -76,7 +73,7 @@ const CustomerDashboard = () => {
   if (loading) return <div className="dashboard-loading">Loading…</div>;
   if (!customerData) return null;
 
-  const companyName = customerData.company_name || customerData.customer?.company_name;
+  const companyName  = customerData.company_name  || customerData.customer?.company_name;
   const customerCode = customerData.customer_code || customerData.customer?.customer_code;
 
   return (
@@ -123,6 +120,7 @@ const CustomerDashboard = () => {
           </div>
         </div>
 
+        {/* ── Desktop Table ── */}
         <div className="table-container">
           <table className="property-table">
             <thead>
@@ -154,11 +152,9 @@ const CustomerDashboard = () => {
                       </span>
                     </td>
                     <td className="deficiency-cell">
-                      {property.has_deficiency ? (
-                        <span className="deficiency-flag">⚠️ Yes</span>
-                      ) : (
-                        <span className="no-deficiency">—</span>
-                      )}
+                      {property.has_deficiency
+                        ? <span className="deficiency-flag">⚠️ Yes</span>
+                        : <span className="no-deficiency">—</span>}
                     </td>
                     <td>
                       <button className="view-btn" onClick={() => handlePropertyClick(property)}>
@@ -171,6 +167,46 @@ const CustomerDashboard = () => {
             </tbody>
           </table>
         </div>
+
+        {/* ── Mobile Cards ── */}
+        <div className="property-cards">
+          {filteredProperties.length === 0 ? (
+            <div className="empty-cards">No properties found.</div>
+          ) : (
+            filteredProperties.map((property, index) => (
+              <div key={property.id} className="property-card">
+                <div className="card-top">
+                  <div className="card-index">#{index + 1}</div>
+                  <span className={`status-badge ${getStatusColor(property.current_status)}`}>
+                    {property.current_status}
+                  </span>
+                </div>
+                <div className="card-address">{property.address}</div>
+                <div className="card-meta">
+                  <span className="card-meta-item">
+                    <span className="card-meta-label">Service</span>
+                    {property.service_type}
+                  </span>
+                  <span className="card-meta-item">
+                    <span className="card-meta-label">Submitted</span>
+                    {property.submission_date || '—'}
+                  </span>
+                </div>
+                <div className="card-footer">
+                  <span>
+                    {property.has_deficiency
+                      ? <span className="deficiency-flag">⚠️ Deficiency noted</span>
+                      : <span className="no-deficiency">No deficiency</span>}
+                  </span>
+                  <button className="view-btn" onClick={() => handlePropertyClick(property)}>
+                    View Timeline
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
       </div>
     </div>
   );
