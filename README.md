@@ -28,7 +28,7 @@ A full-stack web application for tracking lot grading certificate jobs through a
 Construction clients manage multiple properties through the City of Edmonton certification process with no visibility into where each one stands. Status updates required constant back-and-forth with the surveyor.
 
 ### The Solution
-A customer portal where clients log in with a company code and instantly see the status of all their properties. The admin (company owner) manages everything through a dashboard — no technical knowledge required.
+A customer portal where clients log in with a company code and instantly see the status of all their properties. The admin (company owner) manages everything through a dashboard with no technical knowledge required.
 
 **Real Users:** Active production use by construction companies in Edmonton  
 **Business Impact:** Eliminates status update calls, improves client transparency
@@ -54,10 +54,10 @@ A customer portal where clients log in with a company code and instantly see the
 ## Built With
 
 **Backend**
-- Node.js + Express — REST API
-- Google Sheets API — live data source (no database required)
-- Cloudinary — persistent deficiency photo storage
-- bcrypt — admin password hashing
+- Node.js + Express (REST API)
+- Google Sheets API (live data source, no database required)
+- Cloudinary for persistent deficiency photo storage
+- bcrypt for admin password hashing
 - Deployed on Railway
 
 **Frontend**
@@ -83,7 +83,7 @@ Google Sheets acts as the live database. The company owner manages all property 
 ## Key Features
 
 ### Customer Portal
-- Login via company code (e.g. `VNCO-001`) — no password required
+- Login via company code (e.g. `VNCO-001`) with no password required
 - Property dashboard with filter by status
 - Visual timeline showing certification stages
 - Deficiency photo display when issues are recorded
@@ -98,7 +98,7 @@ Google Sheets acts as the live database. The company owner manages all property 
 ### Admin Dashboard
 - Secure login with bcrypt-hashed credentials
 - Live property table pulled from Google Sheets on every load
-- One-click status updates — writes directly to the sheet
+- One-click status updates, written directly to the sheet
 - Drag-and-drop deficiency photo upload via Cloudinary
 - Search and filter by status, address, or company
 
@@ -107,19 +107,19 @@ Google Sheets acts as the live database. The company owner manages all property 
 ## Engineering Decisions
 
 ### Data Layer: Google Sheets over a Traditional Database
-The initial implementation used CSV file uploads — the admin would export a spreadsheet, upload it through the dashboard, and the portal would parse and store the data. In practice this created unnecessary friction: every update required exporting, uploading, and managing file versions.
+The initial implementation used CSV file uploads; the admin would export a spreadsheet, upload it through the dashboard, and the portal would parse and store the data. In practice this created unnecessary friction: every update required exporting, uploading, and managing file versions.
 
 Since the client's existing workflow was already spreadsheet-native, I migrated the data layer to the Google Sheets API. The sheet becomes the live source of truth — the admin edits cells directly and the portal reflects changes on every page load. This eliminated the upload step entirely and reduced the technical barrier for the non-developer admin.
 
 **Tradeoff acknowledged:** Google Sheets has rate limits and no transaction support. For the current scale this is appropriate, but a migration to PostgreSQL would be the right call at higher volume.
 
 ### Timeline: Removing Dates to Reduce Admin Overhead
-The original timeline tracked both the stage and the date it was reached — displayed as a dated progression across the certification stages. In production, this created a fragile workflow: the admin had to manually maintain a formatted date string per stage, and a single formatting error would break the timeline display.
+The original timeline tracked both the stage and the date it was reached, displayed as a dated progression across the certification stages. In production, this created a fragile workflow: the admin had to manually maintain a formatted date string per stage, and a single formatting error would break the timeline display.
 
 After observing how the admin actually used the system, I simplified the timeline to derive stage completion purely from the current status — all prior stages are automatically marked complete, with no date tracking required. This eliminated a category of user error entirely and reduced data entry to a single field update, without meaningfully reducing the portal's value to clients.
 
 ### Photo Storage: Cloudinary over Filesystem
-Deficiency photos were initially stored on the server filesystem. Railway's ephemeral filesystem meant photos were lost on every redeploy — a silent data loss issue that wouldn't surface until a client noticed a missing photo.
+Deficiency photos were initially stored on the server filesystem. Railway's ephemeral filesystem meant photos were lost on every redeploy, a silent data loss issue that wouldn't surface until a client noticed a missing photo.
 
 Migrating to Cloudinary resolved this. Photos persist across deployments, are served via CDN, and the Cloudinary URL is written back to the Google Sheet automatically on upload.
 
@@ -150,9 +150,9 @@ All data lives in Google Sheets with the following columns:
 
 ## Deployment
 
-- **Backend** — Railway (auto-deploys from GitHub, env vars set in Railway dashboard)
-- **Frontend** — Vercel (auto-deploys from GitHub, `REACT_APP_API_URL` set in Vercel dashboard)
-- **Domain** — GoDaddy DNS pointed to Vercel
+- **Backend:** Railway (auto-deploys from GitHub, env vars set in Railway dashboard)
+- **Frontend:** Vercel (auto-deploys from GitHub, `REACT_APP_API_URL` set in Vercel dashboard)
+- **Domain:** GoDaddy DNS pointed to Vercel
 
 ---
 
@@ -168,7 +168,7 @@ Proprietary software developed for VNCO SURVEYS. All rights reserved.
 [vncosurveys.com](https://vncosurveys.com)
 
 **Developer**  
-Phuong Nam Bui — Computer Science, UNSW  
+Phuong Nam Bui, Computer Science, UNSW  
 [basten2006@icloud.com](mailto:basten2006@icloud.com)  
 [github.com/phuongnambui/property-lookup-portal](https://github.com/phuongnambui/property-lookup-portal)
 
