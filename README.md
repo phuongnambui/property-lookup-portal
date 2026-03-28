@@ -93,7 +93,7 @@ Google Sheets acts as the live database. The company owner manages all property 
 1. Request Received
 2. Processing
 3. Submitted to City
-4. Passed / Failed
+4. Passed / Failed / Cancelled
 
 ### Admin Dashboard
 - Secure login with bcrypt-hashed credentials
