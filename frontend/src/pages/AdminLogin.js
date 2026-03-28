@@ -42,7 +42,9 @@ const AdminLogin = () => {
     <div className="admin-login-container">
       <div className="login-card">
         <div className="admin-badge">Admin Portal</div>
-        <img src="/images/logo.png" alt="VNCO SURVEYS" className="admin-logo" />
+          <a href="https://vncosurveys.com" target="_blank" rel="noreferrer">
+            <img src="/images/logo.png" alt="VNCO SURVEYS" className="admin-logo" />
+          </a>
         <h1>Admin Login</h1>
         <p className="subtitle">Manage customer properties and data</p>
 
