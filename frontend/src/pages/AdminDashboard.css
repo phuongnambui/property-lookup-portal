@@ -9,18 +9,6 @@
   position: relative;
 }
 
-/* Admin background */
-.ad-root::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -2;
-  background-image: url('../images/background-admin.jpg');
-  background-size: cover;
-  background-position: center;
-  animation: kenburns-admin 20s ease-in-out infinite alternate;
-}
-
 @keyframes kenburns-admin {
   0%   { transform: scale(1)    translateX(0)   translateY(0); }
   100% { transform: scale(1.08) translateX(-1%) translateY(-1%); }

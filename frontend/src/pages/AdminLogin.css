@@ -14,17 +14,6 @@
   position: relative;
 }
 
-.admin-login-container::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -2;
-  background-image: url('../images/background-adminlogin.jpg');
-  background-size: cover;
-  background-position: center;
-  animation: kenburns 20s ease-in-out infinite alternate;
-}
-
 @keyframes kenburns {
   0%   { transform: scale(1)    translateX(0)   translateY(0); }
   100% { transform: scale(1.08) translateX(-1%) translateY(-1%); }

@@ -33,7 +33,9 @@ const CustomerLogin = () => {
   return (
     <div className="customer-login-container">
       <div className="login-card">
-        <img src="/images/logo.png" alt="VNCO SURVEYS" className="logo" />
+        <a href="https://vncosurveys.com" target="_blank" rel="noopener noreferrer">
+          <img src="/images/logo.png" alt="VNCO SURVEYS" className="logo" />
+        </a>
         <h1>Property Lookup Portal</h1>
         <p className="subtitle">Enter your customer code to view your properties</p>
         <form onSubmit={handleSubmit}>
@@ -54,7 +56,7 @@ const CustomerLogin = () => {
           </button>
         </form>
         <div className="footer-text">
-          <p>Don't have a customer code? Contact VNCO SURVEYS</p>
+          <p>Don't have a customer code? <a href="https://vncosurveys.com/contact-us-1" target="_blank" rel="noopener noreferrer" className="contact-link">Contact VNCO SURVEYS</a></p>
           <a href="/admin">Admin Login</a>
         </div>
       </div>
