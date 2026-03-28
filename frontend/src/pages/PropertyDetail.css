@@ -108,9 +108,10 @@
   padding: 6px 16px;
   border-radius: 20px;
 }
-.badge-pass     { background: #d1fae5; color: #065f46; }
-.badge-fail     { background: #fee2e2; color: #991b1b; }
-.badge-progress { background: #fef3c7; color: #92400e; }
+.badge-pass      { background: #d1fae5; color: #065f46; }
+.badge-fail      { background: #fee2e2; color: #991b1b; }
+.badge-cancelled { background: #f3f4f6; color: #6b7280; }
+.badge-progress  { background: #fef3c7; color: #92400e; }
 
 /* ── Content ──────────────────────────────────────────────────── */
 .pd-content {
@@ -216,6 +217,30 @@
 }
 .tl-conn-done    { background: #16a34a; }
 .tl-conn-pending { border-top: 2px dashed #e5e7eb; background: transparent; height: 0; margin-top: 21px; }
+
+/* ── Cancelled node ───────────────────────────────────────────── */
+.tl-cancelled-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0 16px;
+  width: 100%;
+}
+
+.tl-cancelled-circle {
+  background: #dc2626;
+  border: 2px solid #dc2626;
+  color: white;
+  box-shadow: 0 0 0 5px rgba(220,38,38,0.12);
+}
+
+.tl-cancelled-label {
+  color: #dc2626;
+  font-weight: 700;
+  font-size: 12px;
+  text-align: center;
+}
 
 /* ── Deficiency card ──────────────────────────────────────────── */
 .pd-deficiency-card { border-left: 4px solid #f59e0b; }

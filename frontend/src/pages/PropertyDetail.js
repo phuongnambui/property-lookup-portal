@@ -6,46 +6,58 @@ import './PropertyDetail.css';
 // ─── 4 stages + Result node ───────────────────────────────────────────────────
 
 const STAGES = [
-  { key: 'Request Received', label: 'Request\nReceived' },
-  { key: 'Processing',       label: 'Processing' },
+  { key: 'Request Received',  label: 'Request\nReceived' },
+  { key: 'Processing',        label: 'Processing' },
   { key: 'Submitted to City', label: 'Submitted\nto City' },
-  { key: 'Result',           label: 'Result' }, // becomes Passed/Failed
+  { key: 'Result',            label: 'Result' },
 ];
 
 function normalise(status) {
   return (status || '').trim().toLowerCase();
 }
 
-function isPassed(status)  { return normalise(status) === 'passed'; }
-function isFailed(status)  { return normalise(status) === 'failed'; }
-function isResult(status)  { return isPassed(status) || isFailed(status); }
+function isPassed(status)    { return normalise(status) === 'passed'; }
+function isFailed(status)    { return normalise(status) === 'failed'; }
+function isCancelled(status) { return normalise(status) === 'cancelled'; }
+function isResult(status)    { return isPassed(status) || isFailed(status); }
 
 // ─── Timeline ─────────────────────────────────────────────────────────────────
 
 function Timeline({ currentStatus }) {
+
+  // Cancelled: skip the whole pipeline, show a single centred node
+  if (isCancelled(currentStatus)) {
+    return (
+      <div className="tl-wrapper">
+        <div className="tl-cancelled-node">
+          <div className="tl-circle tl-cancelled-circle">
+            <span>✕</span>
+          </div>
+          <div className="tl-label tl-cancelled-label">Request Cancelled</div>
+        </div>
+      </div>
+    );
+  }
+
   const norm = normalise(currentStatus);
 
-  // Map normalised status to index in STAGES (0-2), Result = 3
   const stageKeyMap = {
-    'request received': 0,
-    'processing':       1,
+    'request received':  0,
+    'processing':        1,
     'submitted to city': 2,
-    'passed':           3,
-    'failed':           3,
+    'passed':            3,
+    'failed':            3,
   };
 
   const currentIndex = stageKeyMap[norm] ?? -1;
 
   const getState = (stageKey, index) => {
     const sk = stageKey.toLowerCase();
-
-    // Result node
     if (sk === 'result') {
       if (isPassed(currentStatus)) return 'pass';
       if (isFailed(currentStatus)) return 'fail';
-      return 'pending'; // not yet reached
+      return 'pending';
     }
-
     if (index < currentIndex)  return 'completed';
     if (index === currentIndex) return 'current';
     return 'pending';
@@ -55,14 +67,13 @@ function Timeline({ currentStatus }) {
     <div className="tl-wrapper">
       <div className="tl-track">
         {STAGES.map((stage, i) => {
-          const state  = getState(stage.key, i);
-          const isLast = i === STAGES.length - 1;
+          const state     = getState(stage.key, i);
+          const isLast    = i === STAGES.length - 1;
           const nextState = !isLast ? getState(STAGES[i + 1].key, i + 1) : null;
           const connDone  = state === 'completed' &&
             (nextState === 'completed' || nextState === 'current' ||
              nextState === 'pass'      || nextState === 'fail');
 
-          // Result node label changes based on outcome
           const displayLabel =
             stage.key === 'Result' && isResult(currentStatus)
               ? (isPassed(currentStatus) ? 'Passed' : 'Failed')
@@ -115,9 +126,14 @@ export default function PropertyDetail() {
 
   if (!property || !customerData) return null;
 
-  const passed   = isPassed(property.current_status);
-  const failed   = isFailed(property.current_status);
-  const badgeCls = passed ? 'badge-pass' : failed ? 'badge-fail' : 'badge-progress';
+  const passed    = isPassed(property.current_status);
+  const failed    = isFailed(property.current_status);
+  const cancelled = isCancelled(property.current_status);
+
+  const badgeCls = passed    ? 'badge-pass'
+                 : failed    ? 'badge-fail'
+                 : cancelled ? 'badge-cancelled'
+                 :             'badge-progress';
 
   return (
     <div className="pd-root">
@@ -157,8 +173,8 @@ export default function PropertyDetail() {
           <Timeline currentStatus={property.current_status} />
         </div>
 
-        {/* Only show deficiency if not passed */}
-        {property.has_deficiency && !passed && (
+        {/* Hide deficiency if passed or cancelled */}
+        {property.has_deficiency && !passed && !cancelled && (
           <div className="pd-card pd-deficiency-card">
             <div className="pd-deficiency-header">
               <span className="pd-def-icon">⚠️</span>
@@ -204,7 +220,9 @@ export default function PropertyDetail() {
             </div>
             <div className="pd-detail-item">
               <span className="pd-detail-label">Deficiency</span>
-              <span className="pd-detail-value">{property.has_deficiency && !passed ? 'Yes' : 'No'}</span>
+              <span className="pd-detail-value">
+                {property.has_deficiency && !passed && !cancelled ? 'Yes' : 'No'}
+              </span>
             </div>
           </div>
         </div>

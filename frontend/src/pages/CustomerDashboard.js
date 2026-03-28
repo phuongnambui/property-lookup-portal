@@ -12,13 +12,14 @@ function normalise(status) {
 
 function isCompleted(status) {
   const n = normalise(status);
-  return n === 'passed' || n === 'failed';
+  return n === 'passed' || n === 'failed' || n === 'cancelled';
 }
 
 function getStatusColor(status) {
   const n = normalise(status);
   if (n === 'passed')            return 'status-pass';
   if (n === 'failed')            return 'status-fail';
+  if (n === 'cancelled')         return 'status-cancelled';
   if (n === 'submitted to city') return 'status-submitted';
   if (n === 'processing')        return 'status-processing';
   if (n === 'request received')  return 'status-received';
