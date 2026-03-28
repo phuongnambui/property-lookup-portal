@@ -93,10 +93,12 @@
   backdrop-filter: blur(4px);
 }
 
-.ad-stat-num { font-size: 32px; font-weight: 700; color: #1f2937; line-height: 1; }
-.ad-stat-active { color: #d97706; }
-.ad-stat-pass   { color: #16a34a; }
-.ad-stat-fail   { color: #dc2626; }
+.ad-stat-num       { font-size: 32px; font-weight: 700; color: #1f2937; line-height: 1; }
+.ad-stat-active    { color: #d97706; }
+.ad-stat-pass      { color: #16a34a; }
+.ad-stat-fail      { color: #dc2626; }
+.ad-stat-cancelled { color: #6b7280; }   /* ← added */
+
 .ad-stat-label {
   font-size: 12px;
   font-weight: 600;
@@ -200,18 +202,19 @@
   border-radius: 12px;
   white-space: nowrap;
 }
-.badge-pass     { background: #d1fae5; color: #065f46; }
-.badge-fail     { background: #fee2e2; color: #991b1b; }
-.badge-progress { background: #fef3c7; color: #92400e; }
+.badge-pass      { background: #d1fae5; color: #065f46; }
+.badge-fail      { background: #fee2e2; color: #991b1b; }
+.badge-cancelled { background: #f3f4f6; color: #6b7280; }   /* ← added */
+.badge-progress  { background: #fef3c7; color: #92400e; }
 
 .ad-photo-link { color: #dc2626; font-weight: 600; font-size: 12px; text-decoration: none; }
 .ad-photo-link:hover { text-decoration: underline; }
 
 /* ── Action buttons ───────────────────────────────────────────── */
-.ad-action-btns { 
-  display: flex; 
-  gap: 6px; 
-  flex-wrap: wrap; 
+.ad-action-btns {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
 }
@@ -310,10 +313,10 @@
 .drop-hint  { font-size: 12px; color: #9ca3af; }
 .drop-preview { width: 100%; max-height: 260px; object-fit: contain; border-radius: 6px; }
 
-.stage-picker { 
-  display: flex; 
-  flex-wrap: wrap; 
-  gap: 8px; 
+.stage-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-bottom: 20px;
   justify-content: center;
 }
@@ -333,6 +336,11 @@
 }
 .stage-option:hover { border-color: #dc2626; color: #dc2626; }
 .stage-option-active { background: #dc2626; border-color: #dc2626; color: white; font-weight: 600; }
+
+/* Cancelled button sits visually separate — grey idle, grey active */
+.stage-option-cancel                      { border-color: #d1d5db; color: #6b7280; }
+.stage-option-cancel:hover                { border-color: #6b7280; color: #374151; background: #f9fafb; }
+.stage-option-cancel.stage-option-active  { background: #6b7280; border-color: #6b7280; color: white; }
 
 .modal-error { color: #dc2626; font-size: 13px; margin: 0 0 16px; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }

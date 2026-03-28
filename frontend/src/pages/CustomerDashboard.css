@@ -182,6 +182,7 @@
 }
 .status-pass        { background: #d1fae5; color: #065f46; }
 .status-fail        { background: #fee2e2; color: #991b1b; }
+.status-cancelled   { background: #f3f4f6; color: #6b7280; }
 .status-submitted   { background: #dbeafe; color: #1e40af; }
 .status-processing  { background: #fef3c7; color: #92400e; }
 .status-received    { background: #f3f4f6; color: #374151; }

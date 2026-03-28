@@ -38,7 +38,11 @@ const VALID_STATUSES = [
   'Submitted to City',
   'Passed',
   'Failed',
+  'Cancelled',           // ← added
 ];
+
+// Statuses that clear deficiency data — request is over, no action needed
+const TERMINAL_STATUSES = ['passed', 'cancelled'];
 
 // Normalise whatever the brother types into canonical form
 function normaliseStatus(raw) {
@@ -66,8 +70,8 @@ function parseRow(row, rowIndex) {
   // has_deficiency: TRUE (any case) = true, anything else (empty, FALSE, etc.) = false
   const has_deficiency = has_deficiency_raw?.toString().toUpperCase() === 'TRUE';
 
-  // If passed, never show deficiency regardless of sheet value
-  const isPassed = current_status.toLowerCase() === 'passed';
+  // Terminal statuses — deficiency and photo are no longer relevant
+  const isTerminal = TERMINAL_STATUSES.includes(current_status.toLowerCase());
 
   return {
     id:                   rowIndex,
@@ -77,8 +81,8 @@ function parseRow(row, rowIndex) {
     service_type:         service_type.trim(),
     current_status,
     submission_date:      submission_date.trim(),
-    has_deficiency:       isPassed ? false : has_deficiency,
-    deficiency_photo_url: isPassed ? '' : deficiency_photo_url.trim(),
+    has_deficiency:       isTerminal ? false : has_deficiency,
+    deficiency_photo_url: isTerminal ? '' : deficiency_photo_url.trim(),
     attempt_number:       parseInt(attempt_number_raw, 10) || 1,
   };
 }
@@ -89,7 +93,6 @@ async function getPropertiesByCustomerCode(customerCode) {
     spreadsheetId: SHEET_ID,
     range: DATA_RANGE,
   });
-
   const rows = res.data.values || [];
   const properties = rows
     .map((row, i) => parseRow(row, i + 1))
@@ -110,7 +113,6 @@ async function getAllProperties() {
     spreadsheetId: SHEET_ID,
     range: DATA_RANGE,
   });
-
   const rows = res.data.values || [];
   return rows.map((row, i) => parseRow(row, i + 1));
 }
@@ -144,13 +146,13 @@ async function updatePropertyStatus(rowId, newStatus) {
     requestBody:   { values: [[canonical]] },
   });
 
-  // If passed, auto-clear has_deficiency and photo URL in the Sheet
-  if (canonical.toLowerCase() === 'passed') {
+  // For any terminal status, auto-clear has_deficiency and photo URL in the sheet
+  if (TERMINAL_STATUSES.includes(canonical.toLowerCase())) {
     await sheets.spreadsheets.values.update({
       spreadsheetId: SHEET_ID,
       range:         `${SHEET_NAME}!G${sheetRow}:H${sheetRow}`,
       valueInputOption: 'RAW',
-      requestBody:   { values: [['' , '']] },
+      requestBody:   { values: [['', '']] },
     });
   }
 }

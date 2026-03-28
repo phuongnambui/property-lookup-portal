@@ -10,6 +10,7 @@ const STAGES = [
   'Submitted to City',
   'Passed',
   'Failed',
+  'Cancelled',          
 ];
 
 function normalise(status) {
@@ -19,8 +20,9 @@ function normalise(status) {
 function StatusBadge({ status }) {
   const n = normalise(status);
   const cls =
-    n === 'passed'  ? 'badge-pass'
-    : n === 'failed' ? 'badge-fail'
+    n === 'passed'    ? 'badge-pass'
+    : n === 'failed'  ? 'badge-fail'
+    : n === 'cancelled' ? 'badge-cancelled'
     : 'badge-progress';
   return <span className={`ad-badge ${cls}`}>{status}</span>;
 }
@@ -143,7 +145,7 @@ function StatusUpdateModal({ property, onClose, onSuccess }) {
           {STAGES.map((stage) => (
             <button
               key={stage}
-              className={`stage-option ${selected === stage ? 'stage-option-active' : ''}`}
+              className={`stage-option ${selected === stage ? 'stage-option-active' : ''} ${stage === 'Cancelled' ? 'stage-option-cancel' : ''}`}
               onClick={() => setSelected(stage)}
             >
               {stage}
@@ -161,6 +163,9 @@ function StatusUpdateModal({ property, onClose, onSuccess }) {
     </div>
   );
 }
+
+// Terminal statuses — not counted as active
+const TERMINAL = ['Passed', 'Failed', 'Cancelled'];
 
 export default function AdminDashboard() {
   const [properties, setProperties] = useState([]);
@@ -210,10 +215,11 @@ export default function AdminDashboard() {
   });
 
   const stats = {
-    total:  properties.length,
-    active: properties.filter((p) => p.current_status !== 'Passed' && p.current_status !== 'Failed').length,
-    pass:   properties.filter((p) => p.current_status === 'Passed').length,
-    fail:   properties.filter((p) => p.current_status === 'Failed').length,
+    total:     properties.length,
+    active:    properties.filter((p) => !TERMINAL.includes(p.current_status)).length,
+    pass:      properties.filter((p) => p.current_status === 'Passed').length,
+    fail:      properties.filter((p) => p.current_status === 'Failed').length,
+    cancelled: properties.filter((p) => p.current_status === 'Cancelled').length,
   };
 
   return (
@@ -234,15 +240,31 @@ export default function AdminDashboard() {
 
       <div className="ad-content">
 
-        {/* Stats */}
+        {/* Stats — 5 cards */}
         <div className="ad-stats-row">
-          <div className="ad-stat"><span className="ad-stat-num">{stats.total}</span><span className="ad-stat-label">Total</span></div>
-          <div className="ad-stat"><span className="ad-stat-num ad-stat-active">{stats.active}</span><span className="ad-stat-label">In Progress</span></div>
-          <div className="ad-stat"><span className="ad-stat-num ad-stat-pass">{stats.pass}</span><span className="ad-stat-label">Passed</span></div>
-          <div className="ad-stat"><span className="ad-stat-num ad-stat-fail">{stats.fail}</span><span className="ad-stat-label">Failed</span></div>
+          <div className="ad-stat">
+            <span className="ad-stat-num">{stats.total}</span>
+            <span className="ad-stat-label">Total</span>
+          </div>
+          <div className="ad-stat">
+            <span className="ad-stat-num ad-stat-active">{stats.active}</span>
+            <span className="ad-stat-label">In Progress</span>
+          </div>
+          <div className="ad-stat">
+            <span className="ad-stat-num ad-stat-pass">{stats.pass}</span>
+            <span className="ad-stat-label">Passed</span>
+          </div>
+          <div className="ad-stat">
+            <span className="ad-stat-num ad-stat-fail">{stats.fail}</span>
+            <span className="ad-stat-label">Failed</span>
+          </div>
+          <div className="ad-stat">
+            <span className="ad-stat-num ad-stat-cancelled">{stats.cancelled}</span>
+            <span className="ad-stat-label">Cancelled</span>
+          </div>
         </div>
 
-        {/* Search + dropdown filter on one row */}
+        {/* Search + dropdown filter */}
         <div className="ad-filters">
           <input
             className="ad-search"
@@ -286,39 +308,42 @@ export default function AdminDashboard() {
                 {filtered.length === 0 ? (
                   <tr><td colSpan={8} className="ad-empty">No properties match your search.</td></tr>
                 ) : (
-                  filtered.map((p) => (
-                    <tr key={p.id}>
-                      <td className="ad-code">{p.customer_code}</td>
-                      <td>{p.company_name}</td>
-                      <td className="ad-address-cell">{p.address}</td>
-                      <td className="ad-service">{p.service_type}</td>
-                      <td><StatusBadge status={p.current_status} /></td>
-                      <td className="ad-center">
-                        {p.has_deficiency && normalise(p.current_status) !== 'passed' ? (
-                          <span>⚠️</span>
-                        ) : (
-                          <span className="ad-none">—</span>
-                        )}
-                      </td>
-                      <td className="ad-center">
-                        {p.deficiency_photo_url && normalise(p.current_status) !== 'passed' ? (
-                          <a href={p.deficiency_photo_url} target="_blank" rel="noreferrer" className="ad-photo-link">View</a>
-                        ) : (
-                          <span className="ad-none">—</span>
-                        )}
-                      </td>
-                      <td>
-                        <div className="ad-action-btns">
-                          <button className="ad-action-btn" onClick={() => setStatusModal(p)}>Update Status</button>
-                          {p.has_deficiency && (
-                            <button className="ad-action-btn ad-photo-btn" onClick={() => setPhotoModal(p)}>
-                              {p.deficiency_photo_url ? 'Replace Photo' : 'Upload Photo'}
-                            </button>
+                  filtered.map((p) => {
+                    const isTerminal = ['passed', 'cancelled'].includes(normalise(p.current_status));
+                    return (
+                      <tr key={p.id}>
+                        <td className="ad-code">{p.customer_code}</td>
+                        <td>{p.company_name}</td>
+                        <td className="ad-address-cell">{p.address}</td>
+                        <td className="ad-service">{p.service_type}</td>
+                        <td><StatusBadge status={p.current_status} /></td>
+                        <td className="ad-center">
+                          {p.has_deficiency && !isTerminal ? (
+                            <span>⚠️</span>
+                          ) : (
+                            <span className="ad-none">—</span>
                           )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                        </td>
+                        <td className="ad-center">
+                          {p.deficiency_photo_url && !isTerminal ? (
+                            <a href={p.deficiency_photo_url} target="_blank" rel="noreferrer" className="ad-photo-link">View</a>
+                          ) : (
+                            <span className="ad-none">—</span>
+                          )}
+                        </td>
+                        <td>
+                          <div className="ad-action-btns">
+                            <button className="ad-action-btn" onClick={() => setStatusModal(p)}>Update Status</button>
+                            {p.has_deficiency && !isTerminal && (
+                              <button className="ad-action-btn ad-photo-btn" onClick={() => setPhotoModal(p)}>
+                                {p.deficiency_photo_url ? 'Replace Photo' : 'Upload Photo'}
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
