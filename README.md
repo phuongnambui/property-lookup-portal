@@ -40,8 +40,11 @@ A customer portal where clients log in with a company code and instantly see the
 ### Customer Login
 ![Customer Login](images/screenshot-login.png)
 
-### Customer Dashboard
-![Customer Dashboard](images/screenshot-dashboard.png)
+### Customer Dashboard - Desktop Default
+![Customer Dashboard - Desktop](images/screenshot-dashboard.png)
+
+### Customer Dashboard - Mobile Responsiveness
+![Admin Dashboard - Mobile](images/screenshot-mobile.png)
 
 ### Timeline Visualization
 ![Timeline](images/screenshot-timeline.png)
