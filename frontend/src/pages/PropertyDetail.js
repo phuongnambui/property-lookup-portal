@@ -126,12 +126,9 @@ export default function PropertyDetail() {
       <nav className="pd-nav">
         <div className="pd-nav-left">
           <button className="pd-back-btn" onClick={() => navigate('/dashboard')}>← Back</button>
-          <img
-            src="/images/logo.png"
-            alt="VNCO SURVEYS"
-            className="pd-nav-logo"
-            onError={(e) => { e.target.style.display='none'; }}
-          />
+          <a href="https://vncosurveys.com" target="_blank" rel="noreferrer">
+            <img src="/images/logo.png" alt="VNCO SURVEYS" className="navbar-logo" />
+          </a>
         </div>
         <span className="pd-nav-client">
           {customerData.customer?.company_name || customerData.company_name}

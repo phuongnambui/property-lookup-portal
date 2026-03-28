@@ -85,12 +85,9 @@ const CustomerDashboard = () => {
       {/* Navbar */}
       <nav className="navbar">
         <div className="navbar-left">
-          <img
-            src="/images/logo.png"
-            alt="VNCO SURVEYS"
-            className="navbar-logo"
-            onError={(e) => { e.target.style.display='none'; }}
-          />
+          <a href="https://vncosurveys.com" target="_blank" rel="noreferrer">
+            <img src="/images/logo.png" alt="VNCO SURVEYS" className="navbar-logo" />
+          </a>
           <span className="navbar-subtitle">Property Lookup Portal</span>
         </div>
         <div className="navbar-right">

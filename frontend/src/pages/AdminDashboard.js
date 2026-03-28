@@ -211,21 +211,18 @@ export default function AdminDashboard() {
 
   const stats = {
     total:  properties.length,
-    active: properties.filter((p) => p.current_status !== 'Pass' && p.current_status !== 'Fail').length,
-    pass:   properties.filter((p) => p.current_status === 'Pass').length,
-    fail:   properties.filter((p) => p.current_status === 'Fail').length,
+    active: properties.filter((p) => p.current_status !== 'Passed' && p.current_status !== 'Failed').length,
+    pass:   properties.filter((p) => p.current_status === 'Passed').length,
+    fail:   properties.filter((p) => p.current_status === 'Failed').length,
   };
 
   return (
     <div className="ad-root">
       {/* Nav */}
       <nav className="ad-nav">
-        <img
-          src="/images/logo.png"
-          alt="VNCO SURVEYS"
-          className="ad-nav-logo"
-          onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }}
-        />
+        <a href="https://vncosurveys.com" target="_blank" rel="noreferrer">
+          <img src="/images/logo.png" alt="VNCO SURVEYS" className="navbar-logo" />
+        </a>
         <span className="ad-nav-brand" style={{display:'none'}}>VNCO SURVEYS · Admin</span>
         <div className="ad-nav-right">
           <button className="ad-refresh-btn" onClick={fetchProperties}>↺ Refresh</button>
