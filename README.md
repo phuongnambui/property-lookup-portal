@@ -22,13 +22,13 @@
 
 ## About
 
-A full-stack web application for tracking lot grading certificate jobs through a 6-stage certification pipeline. Built for **VNCO SURVEYS**, an Edmonton-based land surveying company.
+A full-stack web application for tracking lot grading certificate jobs through a multi-stage certification pipeline. Built for **VNCO SURVEYS**, an Edmonton-based land surveying company.
 
 ### The Problem
 Construction clients manage multiple properties through the City of Edmonton certification process with no visibility into where each one stands. Status updates required constant back-and-forth with the surveyor.
 
 ### The Solution
-A customer portal where clients log in with a company code and instantly see the status of all their properties. The admin (company owner) manages everything through a dashboard — no technical knowledge required.
+A customer portal where clients log in with a company code and instantly see the status of all their properties. The admin (company owner) manages everything through a dashboard or live from Google Sheets — no technical knowledge required.
 
 **Real Users:** Active production use by construction companies in Edmonton  
 **Business Impact:** Eliminates status update calls, improves client transparency
@@ -36,6 +36,9 @@ A customer portal where clients log in with a company code and instantly see the
 ---
 
 ## Screenshots
+
+### Customer Login
+![Customer Login](images/screenshot-login.png)
 
 ### Customer Dashboard
 ![Customer Dashboard](images/screenshot-dashboard.png)
@@ -77,7 +80,7 @@ React Frontend (Vercel)
 Cloudinary (photo storage)
 ```
 
-Google Sheets acts as the live database. The company owner manages all property data directly in the sheet — adding new properties, updating submission dates — while status updates and photo uploads are handled through the admin dashboard which writes back to the sheet in real time.
+Google Sheets acts as the live database. The company owner manages all property data directly in the sheet — adding new properties, updating submission dates — while status updates and photo uploads are handled through the admin dashboard and written back to the sheet in real time.
 
 ---
 
@@ -85,17 +88,16 @@ Google Sheets acts as the live database. The company owner manages all property 
 
 ### Customer Portal
 - Login via company code (e.g. `VNCO-001`) — no password required
-- Property dashboard with filter by status (All / In Progress / Completed)
-- Visual timeline showing 6 certification stages
+- Property dashboard with filter by status
+- Visual timeline showing certification stages
 - Deficiency photo display when issues are recorded
 - Attempt tracking for re-submitted properties
 
 ### Certification Stages
 1. Request Received
-2. Surveyed
-3. Certificate Processing
-4. Submitted to City
-5. Pass / Fail
+2. Processing
+3. Submitted to City
+4. Passed / Failed
 
 ### Admin Dashboard
 - Secure login with bcrypt-hashed credentials
@@ -103,6 +105,30 @@ Google Sheets acts as the live database. The company owner manages all property 
 - One-click status updates — writes directly to the sheet
 - Drag-and-drop deficiency photo upload via Cloudinary
 - Search and filter by status, address, or company
+
+---
+
+## Engineering Decisions
+
+### Data Layer: Google Sheets over a Traditional Database
+The initial implementation used CSV file uploads — the admin would export a spreadsheet, upload it through the dashboard, and the portal would parse and store the data. In practice this created unnecessary friction: every update required exporting, uploading, and managing file versions.
+
+Since the client's existing workflow was already spreadsheet-native, I migrated the data layer to the Google Sheets API. The sheet becomes the live source of truth — the admin edits cells directly and the portal reflects changes on every page load. This eliminated the upload step entirely and reduced the technical barrier for the non-developer admin.
+
+**Tradeoff acknowledged:** Google Sheets has rate limits and no transaction support. For the current scale this is appropriate, but a migration to PostgreSQL would be the right call at higher volume.
+
+### Timeline: Removing Dates to Reduce Admin Overhead
+The original timeline tracked both the stage and the date it was reached — displayed as a dated progression across the certification stages. In production, this created a fragile workflow: the admin had to manually maintain a formatted date string per stage, and a single formatting error would break the timeline display.
+
+After observing how the admin actually used the system, I simplified the timeline to derive stage completion purely from the current status — all prior stages are automatically marked complete, with no date tracking required. This eliminated a category of user error entirely and reduced data entry to a single field update, without meaningfully reducing the portal's value to clients.
+
+### Photo Storage: Cloudinary over Filesystem
+Deficiency photos were initially stored on the server filesystem. Railway's ephemeral filesystem meant photos were lost on every redeploy — a silent data loss issue that wouldn't surface until a client noticed a missing photo.
+
+Migrating to Cloudinary resolved this. Photos persist across deployments, are served via CDN, and the Cloudinary URL is written back to the Google Sheet automatically on upload.
+
+### Auth: Standardised to sessionStorage
+An early auth bug was traced to inconsistent token storage — some parts of the app read from `localStorage`, others from `sessionStorage`. Standardising all token handling to `sessionStorage` resolved the issue and aligns better with the security expectation that sessions don't persist across browser closes.
 
 ---
 
@@ -116,7 +142,7 @@ All data lives in Google Sheets with the following columns:
 | B | company_name | Client company name |
 | C | address | Property address |
 | D | service_type | `Final Grade` or `Rough Grade` |
-| E | current_status | One of the 6 valid stages |
+| E | current_status | One of the valid pipeline stages |
 | F | submission_date | Date submitted to City |
 | G | has_deficiency | `TRUE` or `FALSE` |
 | H | deficiency_photo_url | Cloudinary URL |
@@ -131,7 +157,7 @@ All data lives in Google Sheets with the following columns:
 - Google Cloud service account with Sheets API enabled
 - Cloudinary account
 
-### Backend setup
+### Backend Setup
 ```bash
 cd backend
 npm install
@@ -152,7 +178,7 @@ JWT_SECRET=your_secret
 node src/server.js
 ```
 
-### Frontend setup
+### Frontend Setup
 ```bash
 cd frontend
 npm install
