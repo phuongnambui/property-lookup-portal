@@ -4,15 +4,16 @@ import axios from 'axios';
 import config from '../config';
 import './CustomerDashboard.css';
 
-const FILTERS = ['All', 'In Progress', 'Completed'];
+const FILTERS = ['All', 'In Progress', 'Completed', 'Cancelled'];
 
 function normalise(status) {
   return (status || '').trim().toLowerCase();
 }
 
-function isCompleted(status) {
+function isCancelled(status) { return normalise(status) === 'cancelled'; }
+function isCompleted(status)  {
   const n = normalise(status);
-  return n === 'passed' || n === 'failed' || n === 'cancelled';
+  return n === 'passed' || n === 'failed';
 }
 
 function getStatusColor(status) {
@@ -65,11 +66,22 @@ const CustomerDashboard = () => {
   };
 
   const filteredProperties = customerData?.properties.filter((p) => {
-    if (filter === 'All')         return true;
-    if (filter === 'Completed')   return isCompleted(p.current_status);
-    if (filter === 'In Progress') return !isCompleted(p.current_status);
+    if (filter === 'All')        return true;
+    if (filter === 'Cancelled')  return isCancelled(p.current_status);
+    if (filter === 'Completed')  return isCompleted(p.current_status);
+    if (filter === 'In Progress') return !isCompleted(p.current_status) && !isCancelled(p.current_status);
     return true;
   }) || [];
+
+  const getCount = (f) => {
+    if (!customerData) return 0;
+    const all = customerData.properties;
+    if (f === 'All')         return all.length;
+    if (f === 'Cancelled')   return all.filter(p => isCancelled(p.current_status)).length;
+    if (f === 'Completed')   return all.filter(p => isCompleted(p.current_status)).length;
+    if (f === 'In Progress') return all.filter(p => !isCompleted(p.current_status) && !isCancelled(p.current_status)).length;
+    return 0;
+  };
 
   if (loading) return <div className="dashboard-loading">Loading…</div>;
   if (!customerData) return null;
@@ -111,11 +123,7 @@ const CustomerDashboard = () => {
                 onClick={() => setFilter(f)}
               >
                 {f}
-                <span className="filter-count">
-                  {f === 'All'         ? customerData.properties.length
-                   : f === 'Completed' ? customerData.properties.filter(p => isCompleted(p.current_status)).length
-                   :                    customerData.properties.filter(p => !isCompleted(p.current_status)).length}
-                </span>
+                <span className="filter-count">{getCount(f)}</span>
               </button>
             ))}
           </div>
