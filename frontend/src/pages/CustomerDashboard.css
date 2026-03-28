@@ -130,13 +130,13 @@
 }
 .filter-tab-active .filter-count { background: rgba(255,255,255,0.25); }
 
-/* ── Table ────────────────────────────────────────────────────── */
+/* ── Desktop Table ────────────────────────────────────────────── */
 .table-container {
   background: rgba(255,255,255,0.92);
   border-radius: 12px;
   box-shadow: 0 2px 16px rgba(0,0,0,0.08);
-  overflow-x: auto;                    /* was overflow: hidden */
-  -webkit-overflow-scrolling: touch;   /* smooth iOS momentum scroll */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   backdrop-filter: blur(4px);
 }
 
@@ -189,7 +189,7 @@
 /* ── Deficiency ───────────────────────────────────────────────── */
 .deficiency-cell  { text-align: center; }
 .deficiency-flag  { font-size: 13px; color: #d97706; font-weight: 600; }
-.no-deficiency    { color: #d1d5db; }
+.no-deficiency    { color: #9ca3af; font-size: 13px; }
 
 /* ── View button ──────────────────────────────────────────────── */
 .view-btn {
@@ -214,6 +214,76 @@
   font-size: 14px;
 }
 
+/* ── Mobile Cards (hidden on desktop) ────────────────────────── */
+.property-cards { display: none; }
+
+.empty-cards {
+  text-align: center;
+  padding: 48px 0;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.property-card {
+  background: rgba(255,255,255,0.92);
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-index {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+.card-address {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1.3;
+}
+
+.card-meta {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.card-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+  color: #374151;
+}
+
+.card-meta-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9ca3af;
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 4px;
+  border-top: 1px solid #f3f4f6;
+}
+
+/* ── Loading ──────────────────────────────────────────────────── */
 .dashboard-loading {
   display: flex;
   align-items: center;
@@ -228,35 +298,36 @@
 @media (max-width: 768px) {
   .dashboard-content { padding: 20px 16px 40px; }
   .dashboard-header  { flex-direction: column; }
-  .navbar-subtitle   { display: none; }
   .filter-tabs       { flex-wrap: wrap; }
 
-  /* navbar wraps instead of overflowing */
+  /* Navbar */
   .navbar {
     height: auto;
     padding: 10px 16px;
     flex-wrap: wrap;
     gap: 8px;
   }
-
-  .navbar-right {
-    gap: 8px;
-  }
-
+  .navbar-subtitle { display: none; }
+  .navbar-right    { gap: 8px; }
   .customer-name {
     max-width: 120px;
     overflow: hidden;
     text-overflow: ellipsis;
     font-size: 13px;
   }
-
   .customer-code {
     font-size: 12px;
     padding: 3px 9px;
   }
-
   .logout-btn {
     padding: 6px 14px;
     font-size: 13px;
+  }
+
+  .table-container { display: none; }
+  .property-cards  {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
   }
 }
