@@ -10,7 +10,7 @@ const STAGES = [
   'Submitted to City',
   'Passed',
   'Failed',
-  'Cancelled',          
+  'Cancelled',
 ];
 
 function normalise(status) {
@@ -20,9 +20,9 @@ function normalise(status) {
 function StatusBadge({ status }) {
   const n = normalise(status);
   const cls =
-    n === 'passed'    ? 'badge-pass'
-    : n === 'failed'  ? 'badge-fail'
-    : n === 'cancelled' ? 'badge-cancelled'
+    n === 'passed'     ? 'badge-pass'
+    : n === 'failed'   ? 'badge-fail'
+    : n === 'cancelled'? 'badge-cancelled'
     : 'badge-progress';
   return <span className={`ad-badge ${cls}`}>{status}</span>;
 }
@@ -164,7 +164,6 @@ function StatusUpdateModal({ property, onClose, onSuccess }) {
   );
 }
 
-// Terminal statuses — not counted as active
 const TERMINAL = ['Passed', 'Failed', 'Cancelled'];
 
 export default function AdminDashboard() {
@@ -229,7 +228,6 @@ export default function AdminDashboard() {
         <a href="https://vncosurveys.com" target="_blank" rel="noreferrer">
           <img src="/images/logo.png" alt="VNCO SURVEYS" className="navbar-logo" />
         </a>
-        <span className="ad-nav-brand" style={{display:'none'}}>VNCO SURVEYS · Admin</span>
         <div className="ad-nav-right">
           <button className="ad-refresh-btn" onClick={fetchProperties}>↺ Refresh</button>
           <button className="ad-logout-btn" onClick={() => { sessionStorage.removeItem('adminToken'); window.location.href = '/admin'; }}>
@@ -240,7 +238,7 @@ export default function AdminDashboard() {
 
       <div className="ad-content">
 
-        {/* Stats — 5 cards */}
+        {/* Stats */}
         <div className="ad-stats-row">
           <div className="ad-stat">
             <span className="ad-stat-num">{stats.total}</span>
@@ -264,7 +262,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Search + dropdown filter */}
+        {/* Search + filter */}
         <div className="ad-filters">
           <input
             className="ad-search"
@@ -284,70 +282,116 @@ export default function AdminDashboard() {
           </select>
         </div>
 
-        {/* Table */}
         {loading ? (
           <div className="ad-loading">Loading properties…</div>
         ) : error ? (
           <div className="ad-error">{error}</div>
         ) : (
-          <div className="ad-table-wrapper">
-            <table className="ad-table">
-              <thead>
-                <tr>
-                  <th>Code</th>
-                  <th>Company</th>
-                  <th>Address</th>
-                  <th>Service</th>
-                  <th>Status</th>
-                  <th>Deficiency</th>
-                  <th>Photo</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.length === 0 ? (
-                  <tr><td colSpan={8} className="ad-empty">No properties match your search.</td></tr>
-                ) : (
-                  filtered.map((p) => {
-                    const isTerminal = ['passed', 'cancelled'].includes(normalise(p.current_status));
-                    return (
-                      <tr key={p.id}>
-                        <td className="ad-code">{p.customer_code}</td>
-                        <td>{p.company_name}</td>
-                        <td className="ad-address-cell">{p.address}</td>
-                        <td className="ad-service">{p.service_type}</td>
-                        <td><StatusBadge status={p.current_status} /></td>
-                        <td className="ad-center">
-                          {p.has_deficiency && !isTerminal ? (
-                            <span>⚠️</span>
-                          ) : (
-                            <span className="ad-none">—</span>
-                          )}
-                        </td>
-                        <td className="ad-center">
-                          {p.deficiency_photo_url && !isTerminal ? (
-                            <a href={p.deficiency_photo_url} target="_blank" rel="noreferrer" className="ad-photo-link">View</a>
-                          ) : (
-                            <span className="ad-none">—</span>
-                          )}
-                        </td>
-                        <td>
-                          <div className="ad-action-btns">
-                            <button className="ad-action-btn" onClick={() => setStatusModal(p)}>Update Status</button>
-                            {p.has_deficiency && !isTerminal && (
-                              <button className="ad-action-btn ad-photo-btn" onClick={() => setPhotoModal(p)}>
-                                {p.deficiency_photo_url ? 'Replace Photo' : 'Upload Photo'}
-                              </button>
+          <>
+            {/* ── Desktop Table ── */}
+            <div className="ad-table-wrapper">
+              <table className="ad-table">
+                <thead>
+                  <tr>
+                    <th>Code</th>
+                    <th>Company</th>
+                    <th>Address</th>
+                    <th>Service</th>
+                    <th>Status</th>
+                    <th>Deficiency</th>
+                    <th>Photo</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.length === 0 ? (
+                    <tr><td colSpan={8} className="ad-empty">No properties match your search.</td></tr>
+                  ) : (
+                    filtered.map((p) => {
+                      const isTerminal = TERMINAL.map(t => t.toLowerCase()).includes(normalise(p.current_status));
+                      return (
+                        <tr key={p.id}>
+                          <td className="ad-code">{p.customer_code}</td>
+                          <td>{p.company_name}</td>
+                          <td className="ad-address-cell">{p.address}</td>
+                          <td className="ad-service">{p.service_type}</td>
+                          <td><StatusBadge status={p.current_status} /></td>
+                          <td className="ad-center">
+                            {p.has_deficiency && !isTerminal ? <span>⚠️</span> : <span className="ad-none">—</span>}
+                          </td>
+                          <td className="ad-center">
+                            {p.deficiency_photo_url && !isTerminal ? (
+                              <a href={p.deficiency_photo_url} target="_blank" rel="noreferrer" className="ad-photo-link">View</a>
+                            ) : (
+                              <span className="ad-none">—</span>
                             )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
+                          </td>
+                          <td>
+                            <div className="ad-action-btns">
+                              <button className="ad-action-btn" onClick={() => setStatusModal(p)}>Update Status</button>
+                              {p.has_deficiency && !isTerminal && (
+                                <button className="ad-action-btn ad-photo-btn" onClick={() => setPhotoModal(p)}>
+                                  {p.deficiency_photo_url ? 'Replace Photo' : 'Upload Photo'}
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* ── Mobile Cards ── */}
+            <div className="ad-cards">
+              {filtered.length === 0 ? (
+                <div className="ad-empty-cards">No properties match your search.</div>
+              ) : (
+                filtered.map((p) => {
+                  const isTerminal = TERMINAL.map(t => t.toLowerCase()).includes(normalise(p.current_status));
+                  return (
+                    <div key={p.id} className="ad-card">
+                      <div className="ad-card-top">
+                        <span className="ad-card-code">{p.customer_code}</span>
+                        <StatusBadge status={p.current_status} />
+                      </div>
+                      <div className="ad-card-address">{p.address}</div>
+                      <div className="ad-card-meta">
+                        <span className="ad-card-meta-item">
+                          <span className="ad-card-meta-label">Company</span>
+                          {p.company_name}
+                        </span>
+                        <span className="ad-card-meta-item">
+                          <span className="ad-card-meta-label">Service</span>
+                          {p.service_type}
+                        </span>
+                      </div>
+                      {p.has_deficiency && !isTerminal && (
+                        <div className="ad-card-deficiency">
+                          <span>⚠️ Deficiency</span>
+                          {p.deficiency_photo_url && (
+                            <a href={p.deficiency_photo_url} target="_blank" rel="noreferrer" className="ad-photo-link">
+                              View Photo
+                            </a>
+                          )}
+                        </div>
+                      )}
+                      <div className="ad-card-footer">
+                        <button className="ad-action-btn" onClick={() => setStatusModal(p)}>Update Status</button>
+                        {p.has_deficiency && !isTerminal && (
+                          <button className="ad-action-btn ad-photo-btn" onClick={() => setPhotoModal(p)}>
+                            {p.deficiency_photo_url ? 'Replace Photo' : 'Upload Photo'}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </>
         )}
       </div>
 

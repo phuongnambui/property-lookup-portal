@@ -9,11 +9,6 @@
   position: relative;
 }
 
-@keyframes kenburns-admin {
-  0%   { transform: scale(1)    translateX(0)   translateY(0); }
-  100% { transform: scale(1.08) translateX(-1%) translateY(-1%); }
-}
-
 /* ── Nav ──────────────────────────────────────────────────────── */
 .ad-nav {
   background: #ffffff;
@@ -28,11 +23,7 @@
   z-index: 50;
 }
 
-.ad-nav-logo {
-  height: 36px;
-  width: auto;
-  object-fit: contain;
-}
+.ad-nav-logo { height: 36px; width: auto; object-fit: contain; }
 
 .ad-nav-brand {
   color: #dc2626;
@@ -97,7 +88,7 @@
 .ad-stat-active    { color: #d97706; }
 .ad-stat-pass      { color: #16a34a; }
 .ad-stat-fail      { color: #dc2626; }
-.ad-stat-cancelled { color: #6b7280; }   /* ← added */
+.ad-stat-cancelled { color: #6b7280; }
 
 .ad-stat-label {
   font-size: 12px;
@@ -149,13 +140,12 @@
 }
 .ad-filter-select:focus { border-color: #dc2626; }
 
-/* ── Table ────────────────────────────────────────────────────── */
+/* ── Desktop Table (hidden on mobile) ────────────────────────── */
 .ad-table-wrapper {
   background: rgba(255,255,255,0.92);
   border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
   overflow-x: auto;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
   backdrop-filter: blur(4px);
 }
 
@@ -204,7 +194,7 @@
 }
 .badge-pass      { background: #d1fae5; color: #065f46; }
 .badge-fail      { background: #fee2e2; color: #991b1b; }
-.badge-cancelled { background: #f3f4f6; color: #6b7280; }   /* ← added */
+.badge-cancelled { background: #f3f4f6; color: #6b7280; }
 .badge-progress  { background: #fef3c7; color: #92400e; }
 
 .ad-photo-link { color: #dc2626; font-weight: 600; font-size: 12px; text-decoration: none; }
@@ -239,6 +229,86 @@
 /* ── Loading / Error ──────────────────────────────────────────── */
 .ad-loading { text-align: center; padding: 64px; font-size: 15px; color: #9ca3af; }
 .ad-error   { text-align: center; padding: 64px; font-size: 15px; color: #dc2626; }
+
+/* ── Mobile Cards (hidden on desktop) ────────────────────────── */
+.ad-cards { display: none; }
+
+.ad-empty-cards {
+  text-align: center;
+  padding: 48px 0;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.ad-card {
+  background: rgba(255,255,255,0.92);
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ad-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ad-card-code {
+  font-family: monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.ad-card-address {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1.3;
+}
+
+.ad-card-meta {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.ad-card-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+  color: #374151;
+}
+
+.ad-card-meta-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9ca3af;
+}
+
+.ad-card-deficiency {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #d97706;
+  font-weight: 600;
+}
+
+.ad-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px solid #f3f4f6;
+  flex-wrap: wrap;
+}
 
 /* ── Modal ────────────────────────────────────────────────────── */
 .modal-overlay {
@@ -337,10 +407,9 @@
 .stage-option:hover { border-color: #dc2626; color: #dc2626; }
 .stage-option-active { background: #dc2626; border-color: #dc2626; color: white; font-weight: 600; }
 
-/* Cancelled button sits visually separate — grey idle, grey active */
-.stage-option-cancel                      { border-color: #d1d5db; color: #6b7280; }
-.stage-option-cancel:hover                { border-color: #6b7280; color: #374151; background: #f9fafb; }
-.stage-option-cancel.stage-option-active  { background: #6b7280; border-color: #6b7280; color: white; }
+.stage-option-cancel                     { border-color: #d1d5db; color: #6b7280; }
+.stage-option-cancel:hover               { border-color: #6b7280; color: #374151; background: #f9fafb; }
+.stage-option-cancel.stage-option-active { background: #6b7280; border-color: #6b7280; color: white; }
 
 .modal-error { color: #dc2626; font-size: 13px; margin: 0 0 16px; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
@@ -362,9 +431,23 @@
 
 /* ── Responsive ───────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .ad-content   { padding: 20px 16px 48px; }
-  .ad-stats-row { flex-wrap: wrap; }
-  .ad-stat      { min-width: calc(50% - 8px); }
-  .ad-search    { width: 100%; }
-  .ad-filters   { flex-direction: column; align-items: flex-start; }
+  .ad-content { padding: 20px 16px 48px; }
+
+  /* Stats — 2 per row on mobile */
+  .ad-stats-row  { flex-wrap: wrap; }
+  .ad-stat       { min-width: calc(50% - 8px); }
+  .ad-stat-num   { font-size: 26px; }
+
+  /* Filters */
+  .ad-search  { width: 100%; }
+  .ad-filters { flex-direction: column; align-items: flex-start; }
+  .ad-filter-select { width: 100%; }
+
+  /* Swap table → cards */
+  .ad-table-wrapper { display: none; }
+  .ad-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
 }
