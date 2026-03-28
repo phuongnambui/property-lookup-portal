@@ -28,7 +28,7 @@ A full-stack web application for tracking lot grading certificate jobs through a
 Construction clients manage multiple properties through the City of Edmonton certification process with no visibility into where each one stands. Status updates required constant back-and-forth with the surveyor.
 
 ### The Solution
-A customer portal where clients log in with a company code and instantly see the status of all their properties. The admin (company owner) manages everything through a dashboard or live from Google Sheets — no technical knowledge required.
+A customer portal where clients log in with a company code and instantly see the status of all their properties. The admin (company owner) manages everything through a dashboard — no technical knowledge required.
 
 **Real Users:** Active production use by construction companies in Edmonton  
 **Business Impact:** Eliminates status update calls, improves client transparency
@@ -71,13 +71,9 @@ A customer portal where clients log in with a company code and instantly see the
 ## Architecture
 
 ```
-Google Sheets (source of truth)
-       ↕
-Node/Express API (Railway)
-       ↕
-React Frontend (Vercel)
-       ↕
-Cloudinary (photo storage)
+Google Sheets -> Node/Express API (Railway) -> React Frontend (Vercel)
+                          |
+                    Cloudinary (photos)
 ```
 
 Google Sheets acts as the live database. The company owner manages all property data directly in the sheet — adding new properties, updating submission dates — while status updates and photo uploads are handled through the admin dashboard and written back to the sheet in real time.
