@@ -146,49 +146,6 @@ All data lives in Google Sheets with the following columns:
 
 ---
 
-## Local Development
-
-### Prerequisites
-- Node.js 18+
-- Google Cloud service account with Sheets API enabled
-- Cloudinary account
-
-### Backend Setup
-```bash
-cd backend
-npm install
-```
-
-Create `backend/.env`:
-```
-GOOGLE_SERVICE_ACCOUNT_EMAIL=your-service-account@project.iam.gserviceaccount.com
-GOOGLE_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n
-GOOGLE_SHEET_ID=your_sheet_id
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-JWT_SECRET=your_secret
-```
-
-```bash
-node src/server.js
-```
-
-### Frontend Setup
-```bash
-cd frontend
-npm install
-```
-
-Create `frontend/.env`:
-```
-REACT_APP_API_URL=http://localhost:5001
-```
-
-```bash
-npm start
-```
-
 ---
 
 ## Deployment
