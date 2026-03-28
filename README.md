@@ -76,7 +76,7 @@ Google Sheets -> Node/Express API (Railway) -> React Frontend (Vercel)
                     Cloudinary (photos)
 ```
 
-Google Sheets acts as the live database. The company owner manages all property data directly in the sheet — adding new properties, updating submission dates — while status updates and photo uploads are handled through the admin dashboard and written back to the sheet in real time.
+Google Sheets acts as the live database. The company owner manages all property data directly in the sheet - adding new properties, updating submission dates - while status updates and photo uploads are handled through the admin dashboard and written back to the sheet in real time.
 
 ---
 
