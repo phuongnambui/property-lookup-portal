@@ -43,8 +43,10 @@ A customer portal where clients log in with a company code and instantly see the
 ### Customer Dashboard - Desktop Default
 ![Customer Dashboard - Desktop](images/screenshot-dashboard.png)
 
-### Customer Dashboard - Mobile Responsiveness
-![Admin Dashboard - Mobile](images/screenshot-mobile.png)
+### Customer Dashboard – Mobile Responsiveness
+<div align="center">
+  <img src="images/screenshot-mobile.png" width="320" alt="Customer Dashboard – Mobile" />
+</div>
 
 ### Timeline Visualization
 ![Timeline](images/screenshot-timeline.png)
