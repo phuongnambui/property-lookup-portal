@@ -135,7 +135,8 @@
   background: rgba(255,255,255,0.92);
   border-radius: 12px;
   box-shadow: 0 2px 16px rgba(0,0,0,0.08);
-  overflow: hidden;
+  overflow-x: auto;                    /* was overflow: hidden */
+  -webkit-overflow-scrolling: touch;   /* smooth iOS momentum scroll */
   backdrop-filter: blur(4px);
 }
 
@@ -229,4 +230,33 @@
   .dashboard-header  { flex-direction: column; }
   .navbar-subtitle   { display: none; }
   .filter-tabs       { flex-wrap: wrap; }
+
+  /* navbar wraps instead of overflowing */
+  .navbar {
+    height: auto;
+    padding: 10px 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .navbar-right {
+    gap: 8px;
+  }
+
+  .customer-name {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 13px;
+  }
+
+  .customer-code {
+    font-size: 12px;
+    padding: 3px 9px;
+  }
+
+  .logout-btn {
+    padding: 6px 14px;
+    font-size: 13px;
+  }
 }
