@@ -4,17 +4,16 @@ import axios from 'axios';
 import config from '../config';
 import './CustomerDashboard.css';
 
-const FILTERS = ['All', 'In Progress', 'Completed', 'Cancelled'];
+const FILTERS = ['All', 'In Progress', 'Passed', 'Failed', 'Cancelled'];
 
 function normalise(status) {
   return (status || '').trim().toLowerCase();
 }
 
 function isCancelled(status) { return normalise(status) === 'cancelled'; }
-function isCompleted(status)  {
-  const n = normalise(status);
-  return n === 'passed' || n === 'failed';
-}
+function isPassed(status)    { return normalise(status) === 'passed'; }
+function isFailed(status)    { return normalise(status) === 'failed'; }
+function isCompleted(status) { return isPassed(status) || isFailed(status); }
 
 function getStatusColor(status) {
   const n = normalise(status);
@@ -66,9 +65,10 @@ const CustomerDashboard = () => {
   };
 
   const filteredProperties = customerData?.properties.filter((p) => {
-    if (filter === 'All')        return true;
-    if (filter === 'Cancelled')  return isCancelled(p.current_status);
-    if (filter === 'Completed')  return isCompleted(p.current_status);
+    if (filter === 'All')         return true;
+    if (filter === 'Cancelled')   return isCancelled(p.current_status);
+    if (filter === 'Passed')      return isPassed(p.current_status);
+    if (filter === 'Failed')      return isFailed(p.current_status);
     if (filter === 'In Progress') return !isCompleted(p.current_status) && !isCancelled(p.current_status);
     return true;
   }) || [];
@@ -78,7 +78,8 @@ const CustomerDashboard = () => {
     const all = customerData.properties;
     if (f === 'All')         return all.length;
     if (f === 'Cancelled')   return all.filter(p => isCancelled(p.current_status)).length;
-    if (f === 'Completed')   return all.filter(p => isCompleted(p.current_status)).length;
+    if (f === 'Passed')      return all.filter(p => isPassed(p.current_status)).length;
+    if (f === 'Failed')      return all.filter(p => isFailed(p.current_status)).length;
     if (f === 'In Progress') return all.filter(p => !isCompleted(p.current_status) && !isCancelled(p.current_status)).length;
     return 0;
   };
