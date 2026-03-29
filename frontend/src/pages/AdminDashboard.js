@@ -317,10 +317,10 @@ export default function AdminDashboard() {
                           <td className="ad-service">{p.service_type}</td>
                           <td><StatusBadge status={p.current_status} /></td>
                           <td className="ad-center">
-                            {p.has_deficiency && !isTerminal ? <span>⚠️</span> : <span className="ad-none">—</span>}
+                            {p.has_deficiency && normalise(p.current_status) === 'failed' ? <span>⚠️</span> : <span className="ad-none">—</span>}
                           </td>
                           <td className="ad-center">
-                            {p.deficiency_photo_url && !isTerminal ? (
+                            {p.deficiency_photo_url && normalise(p.current_status) === 'failed' ? (
                               <a href={p.deficiency_photo_url} target="_blank" rel="noreferrer" className="ad-photo-link">View</a>
                             ) : (
                               <span className="ad-none">—</span>
@@ -329,7 +329,7 @@ export default function AdminDashboard() {
                           <td>
                             <div className="ad-action-btns">
                               <button className="ad-action-btn" onClick={() => setStatusModal(p)}>Update Status</button>
-                              {p.has_deficiency && !isTerminal && (
+                              {p.has_deficiency && normalise(p.current_status) === 'failed' && (
                                 <button className="ad-action-btn ad-photo-btn" onClick={() => setPhotoModal(p)}>
                                   {p.deficiency_photo_url ? 'Replace Photo' : 'Upload Photo'}
                                 </button>
@@ -380,7 +380,7 @@ export default function AdminDashboard() {
                       )}
                       <div className="ad-card-footer">
                         <button className="ad-action-btn" onClick={() => setStatusModal(p)}>Update Status</button>
-                        {p.has_deficiency && !isTerminal && (
+                        {p.has_deficiency && normalise(p.current_status) === 'failed' && (
                           <button className="ad-action-btn ad-photo-btn" onClick={() => setPhotoModal(p)}>
                             {p.deficiency_photo_url ? 'Replace Photo' : 'Upload Photo'}
                           </button>
