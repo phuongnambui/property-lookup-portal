@@ -86,6 +86,7 @@ function Timeline({ currentStatus }) {
                   {state === 'completed' && <span>✓</span>}
                   {state === 'pass'      && <span>✓</span>}
                   {state === 'fail'      && <span>✕</span>}
+                  {state === 'current'   && <span>✓</span>} 
                 </div>
                 {state === 'current' && <div className="tl-pulse" />}
                 <div className="tl-label">
