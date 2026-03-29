@@ -308,7 +308,6 @@ export default function AdminDashboard() {
                     <tr><td colSpan={8} className="ad-empty">No properties match your search.</td></tr>
                   ) : (
                     filtered.map((p) => {
-                      const isTerminal = TERMINAL.map(t => t.toLowerCase()).includes(normalise(p.current_status));
                       return (
                         <tr key={p.id}>
                           <td className="ad-code">{p.customer_code}</td>
