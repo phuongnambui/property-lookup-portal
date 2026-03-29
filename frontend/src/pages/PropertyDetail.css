@@ -176,7 +176,7 @@
 }
 
 .tl-completed .tl-circle { background: #16a34a; border: 2px solid #16a34a; color: white; }
-.tl-current   .tl-circle { background: #dc2626; border: 2px solid #dc2626; color: white; box-shadow: 0 0 0 5px rgba(220,38,38,0.15); }
+.tl-current .tl-circle { background: #16a34a; border: 2px solid #16a34a; color: white; box-shadow: 0 0 0 5px rgba(22,163,74,0.15); }
 .tl-pending   .tl-circle { background: white; border: 2px solid #d1d5db; color: #d1d5db; }
 .tl-pass      .tl-circle { background: #16a34a; border: 2px solid #16a34a; color: white; }
 .tl-fail      .tl-circle { background: #dc2626; border: 2px solid #dc2626; color: white; }
@@ -188,7 +188,7 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: rgba(220,38,38,0.2);
+  background: rgba(22,163,74,0.2);
   animation: pulse 2s ease-in-out infinite;
   z-index: 1;
 }
@@ -205,7 +205,7 @@
   color: #9ca3af;
 }
 .tl-completed .tl-label { color: #1f2937; font-weight: 600; }
-.tl-current   .tl-label { color: #dc2626; font-weight: 700; }
+.tl-current .tl-label { color: #16a34a; font-weight: 700; }
 .tl-pass      .tl-label { color: #15803d; font-weight: 700; }
 .tl-fail      .tl-label { color: #dc2626; font-weight: 700; }
 
