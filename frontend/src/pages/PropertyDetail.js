@@ -86,7 +86,7 @@ function Timeline({ currentStatus }) {
                   {state === 'completed' && <span>✓</span>}
                   {state === 'pass'      && <span>✓</span>}
                   {state === 'fail'      && <span>✕</span>}
-                  {state === 'current'   && <span>✓</span>} 
+                  {state === 'current'   && <span>✓</span>}
                 </div>
                 {state === 'current' && <div className="tl-pulse" />}
                 <div className="tl-label">
@@ -128,13 +128,12 @@ export default function PropertyDetail() {
   if (!property || !customerData) return null;
 
   const passed    = isPassed(property.current_status);
-  const failed    = isFailed(property.current_status);
   const cancelled = isCancelled(property.current_status);
 
-  const badgeCls = passed    ? 'badge-pass'
-                 : failed    ? 'badge-fail'
-                 : cancelled ? 'badge-cancelled'
-                 :             'badge-progress';
+  const badgeCls = passed                          ? 'badge-pass'
+                 : isFailed(property.current_status) ? 'badge-fail'
+                 : cancelled                         ? 'badge-cancelled'
+                 :                                     'badge-progress';
 
   return (
     <div className="pd-root">
@@ -174,8 +173,8 @@ export default function PropertyDetail() {
           <Timeline currentStatus={property.current_status} />
         </div>
 
-        {/* Hide deficiency if passed or cancelled */}
-        {property.has_deficiency && !passed && !cancelled && (
+        {/* Deficiency photo — only shown if a photo has been uploaded and job isn't passed/cancelled */}
+        {property.deficiency_photo_url && !passed && !cancelled && (
           <div className="pd-card pd-deficiency-card">
             <div className="pd-deficiency-header">
               <span className="pd-def-icon">⚠️</span>
@@ -187,20 +186,16 @@ export default function PropertyDetail() {
                 </p>
               </div>
             </div>
-            {property.deficiency_photo_url ? (
-              <div className="pd-photo-wrap">
-                {!imgLoaded && <div className="pd-skeleton">Loading photo…</div>}
-                <img
-                  src={property.deficiency_photo_url}
-                  alt="Deficiency"
-                  className={`pd-photo ${imgLoaded ? 'img-show' : 'img-hide'}`}
-                  onLoad={() => setImgLoaded(true)}
-                  onError={() => setImgLoaded(true)}
-                />
-              </div>
-            ) : (
-              <p className="pd-no-photo">Photo not yet uploaded.</p>
-            )}
+            <div className="pd-photo-wrap">
+              {!imgLoaded && <div className="pd-skeleton">Loading photo…</div>}
+              <img
+                src={property.deficiency_photo_url}
+                alt="Deficiency"
+                className={`pd-photo ${imgLoaded ? 'img-show' : 'img-hide'}`}
+                onLoad={() => setImgLoaded(true)}
+                onError={() => setImgLoaded(true)}
+              />
+            </div>
           </div>
         )}
 
@@ -220,10 +215,8 @@ export default function PropertyDetail() {
               <span className="pd-detail-value">#{property.attempt_number}</span>
             </div>
             <div className="pd-detail-item">
-              <span className="pd-detail-label">Deficiency</span>
-              <span className="pd-detail-value">
-                {property.has_deficiency && !passed && !cancelled ? 'Yes' : 'No'}
-              </span>
+              <span className="pd-detail-label">Job Number</span>
+              <span className="pd-detail-value">{property.job_number || '—'}</span>
             </div>
           </div>
         </div>
