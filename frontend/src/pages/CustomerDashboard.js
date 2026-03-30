@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import config from '../config';
@@ -32,7 +32,7 @@ const CustomerDashboard = () => {
   const [filter, setFilter]             = useState('All');
   const navigate = useNavigate();
 
-  const fetchData = useCallback(() => {
+  function fetchData() {
     const code = sessionStorage.getItem('customerCode');
     if (!code) { navigate('/'); return; }
     setLoading(true);
@@ -50,11 +50,10 @@ const CustomerDashboard = () => {
         }
       })
       .finally(() => setLoading(false));
-  }, [navigate]);
+  }
 
-  useEffect(() => { fetchData(); }, [fetchData]);
-
-  useEffect(() => { fetchData(); }, [navigate]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchData(); }, []);
 
   const handleLogout = () => {
     sessionStorage.removeItem('customerData');
