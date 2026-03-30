@@ -32,7 +32,7 @@ const CustomerDashboard = () => {
   const [filter, setFilter]             = useState('All');
   const navigate = useNavigate();
 
-  const fetchData = () => {
+  function fetchData() {
     const code = sessionStorage.getItem('customerCode');
     if (!code) { navigate('/'); return; }
     setLoading(true);
@@ -50,9 +50,10 @@ const CustomerDashboard = () => {
         }
       })
       .finally(() => setLoading(false));
-  };
+  }
 
-  useEffect(() => { fetchData(); }, [navigate]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchData(); }, []);
 
   const handleLogout = () => {
     sessionStorage.removeItem('customerData');
