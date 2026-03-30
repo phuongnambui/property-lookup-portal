@@ -140,14 +140,13 @@ const CustomerDashboard = () => {
                 <th>Service Type</th>
                 <th>Submission Date</th>
                 <th>Status</th>
-                <th>Deficiency</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody>
               {filteredProperties.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="empty-row">No properties found.</td>
+                  <td colSpan={6} className="empty-row">No properties found.</td>
                 </tr>
               ) : (
                 filteredProperties.map((property, index) => (
@@ -160,11 +159,6 @@ const CustomerDashboard = () => {
                       <span className={`status-badge ${getStatusColor(property.current_status)}`}>
                         {property.current_status}
                       </span>
-                    </td>
-                    <td className="deficiency-cell">
-                      {property.has_deficiency
-                        ? <span className="deficiency-flag">⚠️ Yes</span>
-                        : <span className="no-deficiency">—</span>}
                     </td>
                     <td>
                       <button className="view-btn" onClick={() => handlePropertyClick(property)}>
@@ -203,11 +197,6 @@ const CustomerDashboard = () => {
                   </span>
                 </div>
                 <div className="card-footer">
-                  <span>
-                    {property.has_deficiency
-                      ? <span className="deficiency-flag">⚠️ Deficiency noted</span>
-                      : <span className="no-deficiency">No deficiency</span>}
-                  </span>
                   <button className="view-btn" onClick={() => handlePropertyClick(property)}>
                     View Timeline
                   </button>

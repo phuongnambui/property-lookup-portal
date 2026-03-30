@@ -443,11 +443,27 @@
   .ad-filters { flex-direction: column; align-items: flex-start; }
   .ad-filter-select { width: 100%; }
 
-  /* Swap table → cards */
+  /* Swap table to cards */
   .ad-table-wrapper { display: none; }
   .ad-cards {
     display: flex;
     flex-direction: column;
     gap: 12px;
   }
+}
+
+.ad-job-input {
+  width: 80px;
+  padding: 4px 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #1f2937;
+  background: #f9fafb;
+  text-align: center;
+}
+.ad-job-input:focus {
+  outline: none;
+  border-color: #dc2626;
+  background: white;
 }

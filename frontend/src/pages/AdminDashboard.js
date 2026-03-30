@@ -20,18 +20,18 @@ function normalise(status) {
 function StatusBadge({ status }) {
   const n = normalise(status);
   const cls =
-    n === 'passed'     ? 'badge-pass'
-    : n === 'failed'   ? 'badge-fail'
-    : n === 'cancelled'? 'badge-cancelled'
+    n === 'passed'      ? 'badge-pass'
+    : n === 'failed'    ? 'badge-fail'
+    : n === 'cancelled' ? 'badge-cancelled'
     : 'badge-progress';
   return <span className={`ad-badge ${cls}`}>{status}</span>;
 }
 
 function PhotoUploadModal({ property, onClose, onSuccess }) {
-  const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState(property.deficiency_photo_url || null);
+  const [file, setFile]         = useState(null);
+  const [preview, setPreview]   = useState(property.deficiency_photo_url || null);
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError]       = useState('');
   const inputRef = useRef();
 
   const handleFile = (e) => {
@@ -82,7 +82,12 @@ function PhotoUploadModal({ property, onClose, onSuccess }) {
           </div>
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
-        <div className="drop-zone" onDrop={handleDrop} onDragOver={(e) => e.preventDefault()} onClick={() => inputRef.current.click()}>
+        <div
+          className="drop-zone"
+          onDrop={handleDrop}
+          onDragOver={(e) => e.preventDefault()}
+          onClick={() => inputRef.current.click()}
+        >
           {preview ? (
             <img src={preview} alt="Preview" className="drop-preview" />
           ) : (
@@ -92,7 +97,13 @@ function PhotoUploadModal({ property, onClose, onSuccess }) {
               <span className="drop-hint">JPG, PNG, WEBP, HEIC · max 15 MB</span>
             </div>
           )}
-          <input ref={inputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFile} />
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={handleFile}
+          />
         </div>
         {error && <p className="modal-error">{error}</p>}
         <div className="modal-actions">
@@ -108,8 +119,8 @@ function PhotoUploadModal({ property, onClose, onSuccess }) {
 
 function StatusUpdateModal({ property, onClose, onSuccess }) {
   const [selected, setSelected] = useState(property.current_status);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
+  const [saving, setSaving]     = useState(false);
+  const [error, setError]       = useState('');
 
   const handleSave = async () => {
     if (selected === property.current_status) { onClose(); return; }
@@ -155,7 +166,11 @@ function StatusUpdateModal({ property, onClose, onSuccess }) {
         {error && <p className="modal-error">{error}</p>}
         <div className="modal-actions">
           <button className="btn-secondary" onClick={onClose}>Cancel</button>
-          <button className="btn-primary" onClick={handleSave} disabled={saving || selected === property.current_status}>
+          <button
+            className="btn-primary"
+            onClick={handleSave}
+            disabled={saving || selected === property.current_status}
+          >
             {saving ? 'Saving…' : 'Save Status'}
           </button>
         </div>
@@ -164,18 +179,25 @@ function StatusUpdateModal({ property, onClose, onSuccess }) {
   );
 }
 
-const TERMINAL = ['Passed', 'Failed', 'Cancelled'];
+const TERMINAL = ['Passed', 'Cancelled'];
 
 export default function AdminDashboard() {
-  const [properties, setProperties] = useState([]);
-  const [loading, setLoading]       = useState(true);
-  const [error, setError]           = useState('');
-  const [search, setSearch]         = useState('');
+  const [properties, setProperties]     = useState([]);
+  const [loading, setLoading]           = useState(true);
+  const [error, setError]               = useState('');
+  const [search, setSearch]             = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
-  const [photoModal, setPhotoModal]   = useState(null);
-  const [statusModal, setStatusModal] = useState(null);
+  const [photoModal, setPhotoModal]     = useState(null);
+  const [statusModal, setStatusModal]   = useState(null);
+  const [jobNumbers, setJobNumbers]     = useState({});
 
   useEffect(() => { fetchProperties(); }, []);
+
+  useEffect(() => {
+    const init = {};
+    properties.forEach((p) => { init[p.id] = p.job_number || ''; });
+    setJobNumbers(init);
+  }, [properties]);
 
   const fetchProperties = async () => {
     setLoading(true);
@@ -194,13 +216,33 @@ export default function AdminDashboard() {
   };
 
   const handlePhotoSuccess = (rowId, photoUrl) => {
-    setProperties((prev) => prev.map((p) => p.id === rowId ? { ...p, deficiency_photo_url: photoUrl } : p));
+    setProperties((prev) =>
+      prev.map((p) => p.id === rowId ? { ...p, deficiency_photo_url: photoUrl } : p)
+    );
   };
 
   const handleStatusSuccess = (rowId, newStatus) => {
-    setProperties((prev) => prev.map((p) =>
-      p.id === rowId ? { ...p, current_status: newStatus } : p
-    ));
+    setProperties((prev) =>
+      prev.map((p) => p.id === rowId ? { ...p, current_status: newStatus } : p)
+    );
+  };
+
+  const handleJobNumberChange = (rowId, value) => {
+    setJobNumbers((prev) => ({ ...prev, [rowId]: value }));
+  };
+
+  const handleJobNumberSave = async (rowId) => {
+    const value = jobNumbers[rowId] ?? '';
+    try {
+      const token = sessionStorage.getItem('adminToken');
+      await axios.patch(
+        `${config.apiUrl}/api/admin/properties/${rowId}/job-number`,
+        { jobNumber: value },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+    } catch (err) {
+      console.error('Failed to save job number', err);
+    }
   };
 
   const filtered = properties.filter((p) => {
@@ -215,7 +257,7 @@ export default function AdminDashboard() {
 
   const stats = {
     total:     properties.length,
-    active:    properties.filter((p) => !TERMINAL.includes(p.current_status)).length,
+    active:    properties.filter((p) => !TERMINAL.includes(p.current_status) && p.current_status !== 'Failed').length,
     pass:      properties.filter((p) => p.current_status === 'Passed').length,
     fail:      properties.filter((p) => p.current_status === 'Failed').length,
     cancelled: properties.filter((p) => p.current_status === 'Cancelled').length,
@@ -230,7 +272,10 @@ export default function AdminDashboard() {
         </a>
         <div className="ad-nav-right">
           <button className="ad-refresh-btn" onClick={fetchProperties}>↺ Refresh</button>
-          <button className="ad-logout-btn" onClick={() => { sessionStorage.removeItem('adminToken'); window.location.href = '/admin'; }}>
+          <button
+            className="ad-logout-btn"
+            onClick={() => { sessionStorage.removeItem('adminToken'); window.location.href = '/admin'; }}
+          >
             Log out
           </button>
         </div>
@@ -298,7 +343,7 @@ export default function AdminDashboard() {
                     <th>Address</th>
                     <th>Service</th>
                     <th>Status</th>
-                    <th>Deficiency</th>
+                    <th>Job #</th>
                     <th>Photo</th>
                     <th>Actions</th>
                   </tr>
@@ -307,37 +352,42 @@ export default function AdminDashboard() {
                   {filtered.length === 0 ? (
                     <tr><td colSpan={8} className="ad-empty">No properties match your search.</td></tr>
                   ) : (
-                    filtered.map((p) => {
-                      return (
-                        <tr key={p.id}>
-                          <td className="ad-code">{p.customer_code}</td>
-                          <td>{p.company_name}</td>
-                          <td className="ad-address-cell">{p.address}</td>
-                          <td className="ad-service">{p.service_type}</td>
-                          <td><StatusBadge status={p.current_status} /></td>
-                          <td className="ad-center">
-                            {p.has_deficiency && normalise(p.current_status) === 'failed' ? <span>⚠️</span> : <span className="ad-none">—</span>}
-                          </td>
-                          <td className="ad-center">
-                            {p.deficiency_photo_url && normalise(p.current_status) === 'failed' ? (
-                              <a href={p.deficiency_photo_url} target="_blank" rel="noreferrer" className="ad-photo-link">View</a>
-                            ) : (
-                              <span className="ad-none">—</span>
+                    filtered.map((p) => (
+                      <tr key={p.id}>
+                        <td className="ad-code">{p.customer_code}</td>
+                        <td>{p.company_name}</td>
+                        <td className="ad-address-cell">{p.address}</td>
+                        <td className="ad-service">{p.service_type}</td>
+                        <td><StatusBadge status={p.current_status} /></td>
+                        <td>
+                          <input
+                            className="ad-job-input"
+                            value={jobNumbers[p.id] ?? ''}
+                            onChange={(e) => handleJobNumberChange(p.id, e.target.value)}
+                            onBlur={() => handleJobNumberSave(p.id)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); }}
+                            placeholder="—"
+                          />
+                        </td>
+                        <td className="ad-center">
+                          {p.deficiency_photo_url ? (
+                            <a href={p.deficiency_photo_url} target="_blank" rel="noreferrer" className="ad-photo-link">View</a>
+                          ) : (
+                            <span className="ad-none">—</span>
+                          )}
+                        </td>
+                        <td>
+                          <div className="ad-action-btns">
+                            <button className="ad-action-btn" onClick={() => setStatusModal(p)}>Update Status</button>
+                            {normalise(p.current_status) !== 'passed' && normalise(p.current_status) !== 'cancelled' && (
+                              <button className="ad-action-btn ad-photo-btn" onClick={() => setPhotoModal(p)}>
+                                {p.deficiency_photo_url ? 'Replace Photo' : 'Upload Photo'}
+                              </button>
                             )}
-                          </td>
-                          <td>
-                            <div className="ad-action-btns">
-                              <button className="ad-action-btn" onClick={() => setStatusModal(p)}>Update Status</button>
-                              {p.has_deficiency && normalise(p.current_status) === 'failed' && (
-                                <button className="ad-action-btn ad-photo-btn" onClick={() => setPhotoModal(p)}>
-                                  {p.deficiency_photo_url ? 'Replace Photo' : 'Upload Photo'}
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })
+                          </div>
+                        </td>
+                      </tr>
+                    ))
                   )}
                 </tbody>
               </table>
@@ -348,46 +398,52 @@ export default function AdminDashboard() {
               {filtered.length === 0 ? (
                 <div className="ad-empty-cards">No properties match your search.</div>
               ) : (
-                filtered.map((p) => {
-                  const isTerminal = TERMINAL.map(t => t.toLowerCase()).includes(normalise(p.current_status));
-                  return (
-                    <div key={p.id} className="ad-card">
-                      <div className="ad-card-top">
-                        <span className="ad-card-code">{p.customer_code}</span>
-                        <StatusBadge status={p.current_status} />
-                      </div>
-                      <div className="ad-card-address">{p.address}</div>
-                      <div className="ad-card-meta">
-                        <span className="ad-card-meta-item">
-                          <span className="ad-card-meta-label">Company</span>
-                          {p.company_name}
-                        </span>
-                        <span className="ad-card-meta-item">
-                          <span className="ad-card-meta-label">Service</span>
-                          {p.service_type}
-                        </span>
-                      </div>
-                      {p.has_deficiency && !isTerminal && (
-                        <div className="ad-card-deficiency">
-                          <span>⚠️ Deficiency</span>
-                          {p.deficiency_photo_url && (
-                            <a href={p.deficiency_photo_url} target="_blank" rel="noreferrer" className="ad-photo-link">
-                              View Photo
-                            </a>
-                          )}
-                        </div>
-                      )}
-                      <div className="ad-card-footer">
-                        <button className="ad-action-btn" onClick={() => setStatusModal(p)}>Update Status</button>
-                        {p.has_deficiency && normalise(p.current_status) === 'failed' && (
-                          <button className="ad-action-btn ad-photo-btn" onClick={() => setPhotoModal(p)}>
-                            {p.deficiency_photo_url ? 'Replace Photo' : 'Upload Photo'}
-                          </button>
-                        )}
-                      </div>
+                filtered.map((p) => (
+                  <div key={p.id} className="ad-card">
+                    <div className="ad-card-top">
+                      <span className="ad-card-code">{p.customer_code}</span>
+                      <StatusBadge status={p.current_status} />
                     </div>
-                  );
-                })
+                    <div className="ad-card-address">{p.address}</div>
+                    <div className="ad-card-meta">
+                      <span className="ad-card-meta-item">
+                        <span className="ad-card-meta-label">Company</span>
+                        {p.company_name}
+                      </span>
+                      <span className="ad-card-meta-item">
+                        <span className="ad-card-meta-label">Service</span>
+                        {p.service_type}
+                      </span>
+                    </div>
+                    <div className="ad-card-meta">
+                      <span className="ad-card-meta-item">
+                        <span className="ad-card-meta-label">Job #</span>
+                        <input
+                          className="ad-job-input"
+                          value={jobNumbers[p.id] ?? ''}
+                          onChange={(e) => handleJobNumberChange(p.id, e.target.value)}
+                          onBlur={() => handleJobNumberSave(p.id)}
+                          onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); }}
+                          placeholder="—"
+                        />
+                      </span>
+                      {p.deficiency_photo_url && (
+                        <span className="ad-card-meta-item">
+                          <span className="ad-card-meta-label">Photo</span>
+                          <a href={p.deficiency_photo_url} target="_blank" rel="noreferrer" className="ad-photo-link">View</a>
+                        </span>
+                      )}
+                    </div>
+                    <div className="ad-card-footer">
+                      <button className="ad-action-btn" onClick={() => setStatusModal(p)}>Update Status</button>
+                      {normalise(p.current_status) !== 'passed' && normalise(p.current_status) !== 'cancelled' && (
+                        <button className="ad-action-btn ad-photo-btn" onClick={() => setPhotoModal(p)}>
+                          {p.deficiency_photo_url ? 'Replace Photo' : 'Upload Photo'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))
               )}
             </div>
           </>

@@ -25,7 +25,7 @@ const SHEET_NAME = 'Sheet1';
 //  D: service_type
 //  E: current_status
 //  F: submission_date
-//  G: has_deficiency       TRUE or empty
+//  G: job_number
 //  H: deficiency_photo_url
 //  I: attempt_number
 
@@ -60,17 +60,12 @@ function parseRow(row, rowIndex) {
     service_type         = '',
     current_status_raw   = '',
     submission_date      = '',
-    has_deficiency_raw   = '',
+    job_number_raw       = '',
     deficiency_photo_url = '',
     attempt_number_raw   = '1',
   ] = row;
 
   const current_status = normaliseStatus(current_status_raw);
-
-  // has_deficiency: TRUE (any case) = true, anything else (empty, FALSE, etc.) = false
-  const has_deficiency = has_deficiency_raw?.toString().toUpperCase() === 'TRUE';
-
-  // Terminal statuses — deficiency and photo are no longer relevant
   const isTerminal = TERMINAL_STATUSES.includes(current_status.toLowerCase());
 
   return {
@@ -81,7 +76,7 @@ function parseRow(row, rowIndex) {
     service_type:         service_type.trim(),
     current_status,
     submission_date:      submission_date.trim(),
-    has_deficiency:       isTerminal ? false : has_deficiency,
+    job_number:           job_number_raw.trim(),
     deficiency_photo_url: isTerminal ? '' : deficiency_photo_url.trim(),
     attempt_number:       parseInt(attempt_number_raw, 10) || 1,
   };
@@ -150,11 +145,23 @@ async function updatePropertyStatus(rowId, newStatus) {
   if (TERMINAL_STATUSES.includes(canonical.toLowerCase())) {
     await sheets.spreadsheets.values.update({
       spreadsheetId: SHEET_ID,
-      range:         `${SHEET_NAME}!G${sheetRow}:H${sheetRow}`,
+      range:         `${SHEET_NAME}!H${sheetRow}`,
       valueInputOption: 'RAW',
-      requestBody:   { values: [['', '']] },
+      requestBody:   { values: [['']] },
     });
   }
+}
+
+// Update job_number — column G
+async function updateJobNumber(rowId, jobNumber) {
+  const sheets   = getSheetsClient();
+  const sheetRow = rowId + 1;
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: SHEET_ID,
+    range:         `${SHEET_NAME}!G${sheetRow}`,
+    valueInputOption: 'RAW',
+    requestBody:   { values: [[jobNumber]] },
+  });
 }
 
 module.exports = {
@@ -162,5 +169,6 @@ module.exports = {
   getAllProperties,
   updatePhotoUrl,
   updatePropertyStatus,
+  updateJobNumber,
   VALID_STATUSES,
 };
