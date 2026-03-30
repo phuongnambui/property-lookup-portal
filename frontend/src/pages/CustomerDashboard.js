@@ -32,10 +32,10 @@ const CustomerDashboard = () => {
   const [filter, setFilter]             = useState('All');
   const navigate = useNavigate();
 
-  useEffect(() => {
+  const fetchData = () => {
     const code = sessionStorage.getItem('customerCode');
     if (!code) { navigate('/'); return; }
-
+    setLoading(true);
     axios.get(`${config.apiUrl}/api/customer/${code}`)
       .then((res) => {
         setCustomerData(res.data);
@@ -50,7 +50,9 @@ const CustomerDashboard = () => {
         }
       })
       .finally(() => setLoading(false));
-  }, [navigate]);
+  };
+
+  useEffect(() => { fetchData(); }, [navigate]);
 
   const handleLogout = () => {
     sessionStorage.removeItem('customerData');
@@ -104,6 +106,7 @@ const CustomerDashboard = () => {
         <div className="navbar-right">
           <span className="customer-name">{companyName}</span>
           <span className="customer-code">{customerCode}</span>
+          <button className="refresh-btn" onClick={fetchData}>↺ Refresh</button>
           <button className="logout-btn" onClick={handleLogout}>Logout</button>
         </div>
       </nav>

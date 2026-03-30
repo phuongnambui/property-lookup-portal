@@ -332,3 +332,18 @@
     gap: 12px;
   }
 }
+/* refresh */
+.refresh-btn {
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  color: #6b7280;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.refresh-btn:hover {
+  background: #f3f4f6;
+  color: #1f2937;
+}
