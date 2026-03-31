@@ -4,7 +4,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import './PropertyDetail.css';
 
 // ─── 4 stages + Result node ───────────────────────────────────────────────────
-
 const STAGES = [
   { key: 'Request Received',  label: 'Request\nReceived' },
   { key: 'Processing',        label: 'Processing' },
@@ -22,9 +21,7 @@ function isCancelled(status) { return normalise(status) === 'cancelled'; }
 function isResult(status)    { return isPassed(status) || isFailed(status); }
 
 // ─── Timeline ─────────────────────────────────────────────────────────────────
-
 function Timeline({ currentStatus }) {
-
   // Cancelled: skip the whole pipeline, show a single centred node
   if (isCancelled(currentStatus)) {
     return (
@@ -40,7 +37,6 @@ function Timeline({ currentStatus }) {
   }
 
   const norm = normalise(currentStatus);
-
   const stageKeyMap = {
     'request received':  0,
     'processing':        1,
@@ -48,7 +44,6 @@ function Timeline({ currentStatus }) {
     'passed':            3,
     'failed':            3,
   };
-
   const currentIndex = stageKeyMap[norm] ?? -1;
 
   const getState = (stageKey, index) => {
@@ -107,7 +102,6 @@ function Timeline({ currentStatus }) {
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
-
 export default function PropertyDetail() {
   const [property, setProperty]         = useState(null);
   const [customerData, setCustomerData] = useState(null);
@@ -131,13 +125,12 @@ export default function PropertyDetail() {
   const cancelled = isCancelled(property.current_status);
 
   const badgeCls = passed                          ? 'badge-pass'
-                 : isFailed(property.current_status) ? 'badge-fail'
-                 : cancelled                         ? 'badge-cancelled'
-                 :                                     'badge-progress';
+    : isFailed(property.current_status) ? 'badge-fail'
+    : cancelled                         ? 'badge-cancelled'
+    :                                     'badge-progress';
 
   return (
     <div className="pd-root">
-
       {/* Nav */}
       <nav className="pd-nav">
         <div className="pd-nav-left">
@@ -156,9 +149,6 @@ export default function PropertyDetail() {
         <div className="pd-hero-inner">
           <div className="pd-hero-meta">
             <span className="pd-service-tag">{property.service_type}</span>
-            {property.attempt_number > 1 && (
-              <span className="pd-attempt-tag">Attempt #{property.attempt_number}</span>
-            )}
           </div>
           <h1 className="pd-address">{property.address}</h1>
           <span className={`pd-status-badge ${badgeCls}`}>{property.current_status}</span>
@@ -167,7 +157,6 @@ export default function PropertyDetail() {
 
       {/* Content */}
       <div className="pd-content">
-
         <div className="pd-card">
           <p className="pd-card-title">Certification Progress</p>
           <Timeline currentStatus={property.current_status} />
@@ -211,16 +200,11 @@ export default function PropertyDetail() {
               <span className="pd-detail-value">{property.submission_date || '—'}</span>
             </div>
             <div className="pd-detail-item">
-              <span className="pd-detail-label">Attempt</span>
-              <span className="pd-detail-value">#{property.attempt_number}</span>
-            </div>
-            <div className="pd-detail-item">
               <span className="pd-detail-label">Job Number</span>
               <span className="pd-detail-value">{property.job_number || '—'}</span>
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );

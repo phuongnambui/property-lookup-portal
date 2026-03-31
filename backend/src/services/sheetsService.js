@@ -27,9 +27,8 @@ const SHEET_NAME = 'Sheet1';
 //  F: submission_date
 //  G: job_number
 //  H: deficiency_photo_url
-//  I: attempt_number
 
-const DATA_RANGE = `${SHEET_NAME}!A2:I`;
+const DATA_RANGE = `${SHEET_NAME}!A2:H`;
 
 // Canonical status names — these are what get stored in the sheet
 const VALID_STATUSES = [
@@ -38,7 +37,7 @@ const VALID_STATUSES = [
   'Submitted to City',
   'Passed',
   'Failed',
-  'Cancelled',           // ← added
+  'Cancelled',
 ];
 
 // Statuses that clear deficiency data — request is over, no action needed
@@ -49,7 +48,7 @@ function normaliseStatus(raw) {
   if (!raw) return '';
   const lower = raw.trim().toLowerCase();
   const match = VALID_STATUSES.find((s) => s.toLowerCase() === lower);
-  return match || raw.trim(); // return original if no match (don't silently drop)
+  return match || raw.trim();
 }
 
 function parseRow(row, rowIndex) {
@@ -62,7 +61,6 @@ function parseRow(row, rowIndex) {
     submission_date      = '',
     job_number_raw       = '',
     deficiency_photo_url = '',
-    attempt_number_raw   = '1',
   ] = row;
 
   const current_status = normaliseStatus(current_status_raw);
@@ -78,7 +76,6 @@ function parseRow(row, rowIndex) {
     submission_date:      submission_date.trim(),
     job_number:           job_number_raw.trim(),
     deficiency_photo_url: isTerminal ? '' : deficiency_photo_url.trim(),
-    attempt_number:       parseInt(attempt_number_raw, 10) || 1,
   };
 }
 
@@ -141,7 +138,7 @@ async function updatePropertyStatus(rowId, newStatus) {
     requestBody:   { values: [[canonical]] },
   });
 
-  // For any terminal status, auto-clear has_deficiency and photo URL in the sheet
+  // For any terminal status, auto-clear photo URL in the sheet
   if (TERMINAL_STATUSES.includes(canonical.toLowerCase())) {
     await sheets.spreadsheets.values.update({
       spreadsheetId: SHEET_ID,
