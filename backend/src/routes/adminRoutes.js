@@ -1,13 +1,4 @@
 // routes/adminRoutes.js
-// Replaces the old CSV-based admin routes entirely.
-// All data comes from / goes to Google Sheets live.
-//
-// Mount in server.js:
-//   const adminRoutes = require('./routes/adminRoutes');
-//   app.use('/api/admin', adminRoutes);
-//
-// Deps: npm install googleapis multer multer-storage-cloudinary cloudinary
-
 const express = require('express');
 const router  = express.Router();
 const {
@@ -18,10 +9,7 @@ const {
 const photoRoutes = require('./photoRoutes');
 
 // ─── Simple JWT auth middleware ───────────────────────────────────────────────
-// If you already have authMiddleware in your project, import that instead.
-
 const jwt = require('jsonwebtoken');
-
 function adminAuth(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith('Bearer ')) {
@@ -36,9 +24,14 @@ function adminAuth(req, res, next) {
   }
 }
 
-// ─── GET /api/admin/properties ────────────────────────────────────────────────
-// Returns all properties live from Google Sheets.
+// ─── GET /api/admin/verify ────────────────────────────────────────────────────
+// Lightweight token check used by the remember-me flow on the login page.
+// Returns 200 if the token is valid, 401 if expired or invalid (via adminAuth).
+router.get('/verify', adminAuth, (req, res) => {
+  res.json({ valid: true });
+});
 
+// ─── GET /api/admin/properties ────────────────────────────────────────────────
 router.get('/properties', adminAuth, async (req, res) => {
   try {
     const properties = await getAllProperties();
@@ -50,19 +43,14 @@ router.get('/properties', adminAuth, async (req, res) => {
 });
 
 // ─── PATCH /api/admin/properties/:rowId/status ───────────────────────────────
-// Updates current_status and appends to status_history in the Sheet.
-// Body: { status: "Surveyed" }
-
 router.patch('/properties/:rowId/status', adminAuth, async (req, res) => {
   const rowId = parseInt(req.params.rowId, 10);
   const { status } = req.body;
-
   if (!status || !VALID_STATUSES.includes(status)) {
     return res.status(400).json({
       error: `Invalid status. Must be one of: ${VALID_STATUSES.join(', ')}`,
     });
   }
-
   try {
     await updatePropertyStatus(rowId, status);
     res.json({ success: true, rowId, status });
@@ -73,9 +61,6 @@ router.patch('/properties/:rowId/status', adminAuth, async (req, res) => {
 });
 
 // ─── Photo upload routes (Cloudinary) ────────────────────────────────────────
-// POST   /api/admin/upload-photo
-// DELETE /api/admin/delete-photo
-
 router.use(adminAuth, photoRoutes);
 
 module.exports = router;
