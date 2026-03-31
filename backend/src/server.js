@@ -84,6 +84,18 @@ app.post('/api/admin/logout', (req, res) => {
   }
 });
 
+// verify 
+app.get('/api/admin/verify', (req, res) => {
+  try {
+    const token = getToken(req);
+    if (!token) return res.status(401).json({ error: 'No token provided' });
+    verifyAdminToken(token);
+    return res.json({ valid: true });
+  } catch {
+    return res.status(401).json({ error: 'Invalid or expired token' });
+  }
+});
+
 // Admin get all properties — now from Google Sheets
 app.get('/api/admin/properties', async (req, res) => {
   try {
