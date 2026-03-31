@@ -6,6 +6,7 @@ const {
   getPropertiesByCustomerCode,
   getAllProperties,
   updatePropertyStatus,
+  updatePhotoUrl,
   VALID_STATUSES,
 } = require('./services/sheetsService');
 const photoRoutes = require('./routes/photoRoutes');
@@ -108,6 +109,20 @@ app.use('/api/admin', (req, res, next) => {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 }, photoRoutes);
+
+app.delete('/api/admin/properties/:rowId/photo', async (req, res) => {
+  try {
+    const token = getToken(req);
+    if (!token) return res.status(401).json({ error: 'No token provided' });
+    verifyAdminToken(token);
+    const rowId = parseInt(req.params.rowId, 10);
+    await updatePhotoUrl(rowId, '');
+    return res.json({ success: true });
+  } catch (error) {
+    console.error('Photo remove error:', error.message);
+    return res.status(500).json({ error: 'Failed to remove photo.' });
+  }
+});
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 
