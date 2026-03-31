@@ -63,7 +63,7 @@ const AdminLogin = () => {
 
   if (checking) return (
     <div className="admin-login-container">
-      <p style={{ color: 'white', fontSize: '16px', fontWeight: '500' }}>Loading...</p>
+      <p style={{ color: '#9ca3af', fontSize: '16px', fontWeight: '500' }}>Loading...</p>
     </div>
   );
 
