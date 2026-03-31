@@ -27,11 +27,11 @@ function StatusBadge({ status }) {
   return <span className={`ad-badge ${cls}`}>{status}</span>;
 }
 
-function PhotoUploadModal({ property, onClose, onSuccess }) {
-  const [file, setFile]         = useState(null);
-  const [preview, setPreview]   = useState(property.deficiency_photo_url || null);
+function PhotoUploadModal({ property, onClose, onSuccess, onRemove }) {
+  const [file, setFile]           = useState(null);
+  const [preview, setPreview]     = useState(property.deficiency_photo_url || null);
   const [uploading, setUploading] = useState(false);
-  const [error, setError]       = useState('');
+  const [error, setError]         = useState('');
   const inputRef = useRef();
 
   const handleFile = (e) => {
@@ -108,6 +108,15 @@ function PhotoUploadModal({ property, onClose, onSuccess }) {
         {error && <p className="modal-error">{error}</p>}
         <div className="modal-actions">
           <button className="btn-secondary" onClick={onClose}>Cancel</button>
+          {property.deficiency_photo_url && (
+            <button
+              className="btn-secondary"
+              style={{ color: '#dc2626', borderColor: '#dc2626' }}
+              onClick={() => onRemove(property.id)}
+            >
+              Remove Photo
+            </button>
+          )}
           <button className="btn-primary" onClick={handleUpload} disabled={!file || uploading}>
             {uploading ? 'Uploading…' : 'Upload Photo'}
           </button>
@@ -242,6 +251,22 @@ export default function AdminDashboard() {
       );
     } catch (err) {
       console.error('Failed to save job number', err);
+    }
+  };
+
+  const handleRemovePhoto = async (rowId) => {
+    if (!window.confirm('Remove this photo?')) return;
+    try {
+      const token = sessionStorage.getItem('adminToken');
+      await axios.delete(`${config.apiUrl}/api/admin/properties/${rowId}/photo`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setProperties((prev) =>
+        prev.map((p) => p.id === rowId ? { ...p, deficiency_photo_url: '' } : p)
+      );
+      setPhotoModal(null);
+    } catch (err) {
+      console.error('Failed to remove photo', err);
     }
   };
 
@@ -455,8 +480,21 @@ export default function AdminDashboard() {
         )}
       </div>
 
-      {photoModal  && <PhotoUploadModal  property={photoModal}  onClose={() => setPhotoModal(null)}  onSuccess={handlePhotoSuccess} />}
-      {statusModal && <StatusUpdateModal property={statusModal} onClose={() => setStatusModal(null)} onSuccess={handleStatusSuccess} />}
+      {photoModal && (
+        <PhotoUploadModal
+          property={photoModal}
+          onClose={() => setPhotoModal(null)}
+          onSuccess={handlePhotoSuccess}
+          onRemove={handleRemovePhoto}
+        />
+      )}
+      {statusModal && (
+        <StatusUpdateModal
+          property={statusModal}
+          onClose={() => setStatusModal(null)}
+          onSuccess={handleStatusSuccess}
+        />
+      )}
     </div>
   );
 }
