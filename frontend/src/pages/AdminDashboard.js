@@ -272,6 +272,7 @@ export default function AdminDashboard() {
         </a>
         <div className="ad-nav-right">
           <button className="ad-refresh-btn" onClick={fetchProperties}>↺ Refresh</button>
+          <button className="ad-refresh-btn" onClick={() => window.location.href = '/'}>Back</button>
           <button
             className="ad-logout-btn"
             onClick={() => {
