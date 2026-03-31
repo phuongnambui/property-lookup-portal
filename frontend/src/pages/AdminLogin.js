@@ -10,12 +10,15 @@ const AdminLogin = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [checking, setChecking] = useState(true);
   const navigate = useNavigate();
 
-  // On mount: if a remembered token exists, verify it's still valid before trusting it
   useEffect(() => {
     const savedToken = localStorage.getItem('adminToken');
-    if (!savedToken) return;
+    if (!savedToken) {
+      setChecking(false);
+      return;
+    }
 
     axios.get(`${config.apiUrl}/api/admin/verify`, {
       headers: { Authorization: `Bearer ${savedToken}` }
@@ -25,8 +28,8 @@ const AdminLogin = () => {
         navigate('/admin/dashboard');
       })
       .catch(() => {
-        // Token expired or invalid — clear it and show login form
         localStorage.removeItem('adminToken');
+        setChecking(false);
       });
   }, [navigate]);
 
@@ -57,6 +60,12 @@ const AdminLogin = () => {
       setLoading(false);
     }
   };
+
+  if (checking) return (
+    <div className="admin-login-container">
+      <p style={{ color: 'white', fontSize: '16px', fontWeight: '500' }}>Loading...</p>
+    </div>
+  );
 
   return (
     <div className="admin-login-container">
