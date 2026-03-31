@@ -1,12 +1,10 @@
 # VNCO Property Lookup Portal
-
 [![License: Proprietary](https://img.shields.io/badge/License-Proprietary-red.svg?style=for-the-badge)](https://vncosurveys.com)
 
 <div align="center">
   <a href="https://vncosurveys.com">
     <img src="images/logo.png" alt="VNCO SURVEYS" width="540" height="134">
   </a>
-
   <p align="center">
     Production property tracking system for lot grading certificates
     <br />
@@ -25,9 +23,11 @@
 A full-stack web application for tracking lot grading certificate jobs through a multi-stage certification pipeline. Built for **VNCO SURVEYS**, an Edmonton-based land surveying company.
 
 ### The Problem
+
 Construction clients manage multiple properties through the City of Edmonton certification process with no visibility into where each one stands. Status updates required constant back-and-forth with the surveyor.
 
 ### The Solution
+
 A customer portal where clients log in with a company code and instantly see the status of all their properties. The admin (company owner) manages everything through a dashboard with no technical knowledge required.
 
 **Real Users:** Active production use by construction companies in Edmonton  
@@ -62,7 +62,7 @@ A customer portal where clients log in with a company code and instantly see the
 - Node.js + Express (REST API)
 - Google Sheets API (live data source, no database required)
 - Cloudinary for persistent deficiency photo storage
-- bcrypt for admin password hashing
+- JWT (jsonwebtoken) for persistent admin sessions with bcrypt password verification
 - Deployed on Railway
 
 **Frontend**
@@ -74,7 +74,6 @@ A customer portal where clients log in with a company code and instantly see the
 ---
 
 ## Architecture
-
 ```
 Google Sheets -> Node/Express API (Railway) -> React Frontend (Vercel)
                           |
@@ -101,17 +100,19 @@ Google Sheets acts as the live database. The company owner manages all property 
 4. Passed / Failed / Cancelled
 
 ### Admin Dashboard
-- Secure login with bcrypt-hashed credentials
+- Secure login with bcrypt-hashed credentials and JWT session tokens
 - Live property table pulled from Google Sheets on every load
 - One-click status updates, written directly to the sheet
 - Drag-and-drop deficiency photo upload via Cloudinary
 - Search and filter by status, address, or company
+- Remember this device — stays logged in for 30 days
 
 ---
 
 ## Engineering Decisions
 
 ### Data Layer: Google Sheets over a Traditional Database
+
 The initial implementation used CSV file uploads; the admin would export a spreadsheet, upload it through the dashboard, and the portal would parse and store the data. In practice this created unnecessary friction: every update required exporting, uploading, and managing file versions.
 
 Since the client's existing workflow was already spreadsheet-native, I migrated the data layer to the Google Sheets API. The sheet becomes the live source of truth — the admin edits cells directly and the portal reflects changes on every page load. This eliminated the upload step entirely and reduced the technical barrier for the non-developer admin.
@@ -119,17 +120,22 @@ Since the client's existing workflow was already spreadsheet-native, I migrated 
 **Tradeoff acknowledged:** Google Sheets has rate limits and no transaction support. For the current scale this is appropriate, but a migration to PostgreSQL would be the right call at higher volume.
 
 ### Timeline: Removing Dates to Reduce Admin Overhead
+
 The original timeline tracked both the stage and the date it was reached, displayed as a dated progression across the certification stages. In production, this created a fragile workflow: the admin had to manually maintain a formatted date string per stage, and a single formatting error would break the timeline display.
 
 After observing how the admin actually used the system, I simplified the timeline to derive stage completion purely from the current status — all prior stages are automatically marked complete, with no date tracking required. This eliminated a category of user error entirely and reduced data entry to a single field update, without meaningfully reducing the portal's value to clients.
 
 ### Photo Storage: Cloudinary over Filesystem
+
 Deficiency photos were initially stored on the server filesystem. Railway's ephemeral filesystem meant photos were lost on every redeploy, a silent data loss issue that wouldn't surface until a client noticed a missing photo.
 
 Migrating to Cloudinary resolved this. Photos persist across deployments, are served via CDN, and the Cloudinary URL is written back to the Google Sheet automatically on upload.
 
-### Auth: Standardised to sessionStorage
-An early auth bug was traced to inconsistent token storage — some parts of the app read from `localStorage`, others from `sessionStorage`. Standardising all token handling to `sessionStorage` resolved the issue and aligns better with the security expectation that sessions don't persist across browser closes.
+### Auth: JWT for Persistent Admin Sessions
+
+An early auth bug was traced to in-memory session storage on the server — tokens were stored in a runtime array that wiped on every Railway restart or redeploy, silently invalidating any saved sessions including remember me tokens.
+
+Migrating to JWT resolved this. Tokens are self-contained and verified against a secret rather than looked up in memory, so they survive server restarts. The remember me feature now works as expected — a valid token persists in localStorage for 30 days without requiring re-login. Expired or tampered tokens are caught on page load via a lightweight `/api/admin/verify` call, which clears the stored token and redirects to the login form.
 
 ---
 
@@ -148,8 +154,6 @@ All data lives in Google Sheets with the following columns:
 | G | has_deficiency | `TRUE` or `FALSE` |
 | H | deficiency_photo_url | Cloudinary URL |
 | I | attempt_number | Number of submission attempts |
-
----
 
 ---
 
