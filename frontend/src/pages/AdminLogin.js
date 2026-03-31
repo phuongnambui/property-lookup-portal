@@ -12,36 +12,40 @@ const AdminLogin = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // On mount: if a remembered token exists, skip login entirely
+  // On mount: if a remembered token exists, verify it's still valid before trusting it
   useEffect(() => {
     const savedToken = localStorage.getItem('adminToken');
-    if (savedToken) {
-      // Put it in sessionStorage too so the rest of the app finds it normally
-      sessionStorage.setItem('adminToken', savedToken);
-      navigate('/admin/dashboard');
-    }
+    if (!savedToken) return;
+
+    axios.get(`${config.apiUrl}/api/admin/verify`, {
+      headers: { Authorization: `Bearer ${savedToken}` }
+    })
+      .then(() => {
+        sessionStorage.setItem('adminToken', savedToken);
+        navigate('/admin/dashboard');
+      })
+      .catch(() => {
+        // Token expired or invalid — clear it and show login form
+        localStorage.removeItem('adminToken');
+      });
   }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     try {
       const response = await axios.post(`${config.apiUrl}/api/admin/login`, {
         username,
         password,
       });
-
       const token = response.data.token;
       sessionStorage.setItem('adminToken', token);
-
       if (rememberMe) {
         localStorage.setItem('adminToken', token);
       } else {
-        localStorage.removeItem('adminToken'); // clear any old remembered token
+        localStorage.removeItem('adminToken');
       }
-
       navigate('/admin/dashboard');
     } catch (err) {
       if (err.response?.status === 401) {
@@ -61,7 +65,6 @@ const AdminLogin = () => {
         <h2 className="vnco-title">VNCO SURVEYS</h2>
         <h1>Admin Login</h1>
         <p className="subtitle">Manage customer properties and data</p>
-
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="username">Username</label>
@@ -74,7 +77,6 @@ const AdminLogin = () => {
               required
             />
           </div>
-
           <div className="form-group">
             <label htmlFor="password">Password</label>
             <input
@@ -86,7 +88,6 @@ const AdminLogin = () => {
               required
             />
           </div>
-
           <div className="remember-me">
             <input
               type="checkbox"
@@ -96,14 +97,11 @@ const AdminLogin = () => {
             />
             <label htmlFor="rememberMe">Remember this device</label>
           </div>
-
           {error && <div className="error-message">{error}</div>}
-
           <button type="submit" disabled={loading}>
             {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
-
         <div className="footer-text">
           <a href="/">← Back to Customer Portal</a>
         </div>
