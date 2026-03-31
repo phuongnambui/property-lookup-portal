@@ -274,7 +274,11 @@ export default function AdminDashboard() {
           <button className="ad-refresh-btn" onClick={fetchProperties}>↺ Refresh</button>
           <button
             className="ad-logout-btn"
-            onClick={() => { sessionStorage.removeItem('adminToken'); window.location.href = '/admin'; }}
+            onClick={() => {
+              sessionStorage.removeItem('adminToken');
+              localStorage.removeItem('adminToken');
+              window.location.href = '/admin';
+            }}
           >
             Log out
           </button>

@@ -135,3 +135,24 @@ button[type="submit"]:disabled { opacity: 0.6; cursor: not-allowed; }
   text-decoration: none;
 }
 .footer-text a:hover { text-decoration: underline; }
+/* remember me */
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.remember-me input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #dc2626;
+}
+
+.remember-me label {
+  font-size: 14px;
+  color: #9ca3af;
+  cursor: pointer;
+  margin: 0;
+}
