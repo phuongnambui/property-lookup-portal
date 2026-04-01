@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import './PropertyDetail.css';
 
-// ─── 4 stages + Result node ───────────────────────────────────────────────────
 const STAGES = [
   { key: 'Request Received',  label: 'Request\nReceived' },
   { key: 'Processing',        label: 'Processing' },
@@ -22,7 +21,6 @@ function isResult(status)    { return isPassed(status) || isFailed(status); }
 
 // ─── Timeline ─────────────────────────────────────────────────────────────────
 function Timeline({ currentStatus }) {
-  // Cancelled: skip the whole pipeline, show a single centred node
   if (isCancelled(currentStatus)) {
     return (
       <div className="tl-wrapper">
@@ -101,11 +99,41 @@ function Timeline({ currentStatus }) {
   );
 }
 
+// ─── PDF Viewer Modal ─────────────────────────────────────────────────────────
+function PdfViewerModal({ url, onClose }) {
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
+  const embedUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+
+  return (
+    <div className="pd-pdf-overlay" onClick={onClose}>
+      <div className="pd-pdf-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="pd-pdf-header">
+          <span className="pd-pdf-title">Deficiency Report</span>
+          <button className="pd-pdf-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="pd-pdf-body">
+          <iframe
+            src={embedUrl}
+            title="Deficiency PDF"
+            className="pd-pdf-frame"
+            allow="fullscreen"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function PropertyDetail() {
   const [property, setProperty]         = useState(null);
   const [customerData, setCustomerData] = useState(null);
   const [imgLoaded, setImgLoaded]       = useState(false);
+  const [pdfOpen, setPdfOpen]           = useState(false);
   const navigate = useNavigate();
   const { id }   = useParams();
 
@@ -162,7 +190,7 @@ export default function PropertyDetail() {
           <Timeline currentStatus={property.current_status} />
         </div>
 
-        {/* Deficiency photo — only shown if a photo has been uploaded and job isn't passed/cancelled */}
+        {/* Deficiency photo */}
         {property.deficiency_photo_url && !passed && !cancelled && (
           <div className="pd-card pd-deficiency-card">
             <div className="pd-deficiency-header">
@@ -188,6 +216,25 @@ export default function PropertyDetail() {
           </div>
         )}
 
+        {/* Deficiency PDF */}
+        {property.deficiency_pdf_url && !passed && !cancelled && (
+          <div className="pd-card pd-deficiency-card">
+            <div className="pd-deficiency-header">
+              <span className="pd-def-icon">📄</span>
+              <div>
+                <p className="pd-card-title" style={{ marginBottom: 4 }}>Deficiency Report</p>
+                <p className="pd-def-note">
+                  A detailed deficiency report is available. Please review it and
+                  address all items before resubmission.
+                </p>
+              </div>
+            </div>
+            <button className="pd-pdf-btn" onClick={() => setPdfOpen(true)}>
+              View PDF Report
+            </button>
+          </div>
+        )}
+
         <div className="pd-card">
           <p className="pd-card-title">Property Details</p>
           <div className="pd-details-grid">
@@ -206,6 +253,11 @@ export default function PropertyDetail() {
           </div>
         </div>
       </div>
+
+      {/* PDF viewer modal */}
+      {pdfOpen && property.deficiency_pdf_url && (
+        <PdfViewerModal url={property.deficiency_pdf_url} onClose={() => setPdfOpen(false)} />
+      )}
     </div>
   );
 }

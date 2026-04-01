@@ -7,6 +7,7 @@ const {
   getAllProperties,
   updatePropertyStatus,
   updatePhotoUrl,
+  updatePdfUrl,
   VALID_STATUSES,
 } = require('./services/sheetsService');
 const photoRoutes = require('./routes/photoRoutes');
@@ -121,6 +122,20 @@ app.delete('/api/admin/properties/:rowId/photo', async (req, res) => {
   } catch (error) {
     console.error('Photo remove error:', error.message);
     return res.status(500).json({ error: 'Failed to remove photo.' });
+  }
+});
+
+app.delete('/api/admin/properties/:rowId/pdf', async (req, res) => {
+  try {
+    const token = getToken(req);
+    if (!token) return res.status(401).json({ error: 'No token provided' });
+    verifyAdminToken(token);
+    const rowId = parseInt(req.params.rowId, 10);
+    await updatePdfUrl(rowId, '');
+    return res.json({ success: true });
+  } catch (error) {
+    console.error('PDF remove error:', error.message);
+    return res.status(500).json({ error: 'Failed to remove PDF.' });
   }
 });
 

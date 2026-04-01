@@ -126,6 +126,114 @@ function PhotoUploadModal({ property, onClose, onSuccess, onRemove }) {
   );
 }
 
+function PdfUploadModal({ property, onClose, onSuccess, onRemove }) {
+  const [file, setFile]           = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError]         = useState('');
+  const inputRef = useRef();
+
+  const handleFile = (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    if (f.type !== 'application/pdf') { setError('Only PDF files are allowed.'); return; }
+    setFile(f);
+    setError('');
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const f = e.dataTransfer.files[0];
+    if (!f) return;
+    if (f.type !== 'application/pdf') { setError('Only PDF files are allowed.'); return; }
+    setFile(f);
+    setError('');
+  };
+
+  const handleUpload = async () => {
+    if (!file) return;
+    setUploading(true);
+    setError('');
+    try {
+      const token = sessionStorage.getItem('adminToken');
+      const formData = new FormData();
+      formData.append('pdf', file);
+      formData.append('rowId', property.id);
+      const res = await axios.post(`${config.apiUrl}/api/admin/upload-pdf`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` },
+      });
+      onSuccess(property.id, res.data.pdfUrl);
+      onClose();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Upload failed. Please try again.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <div>
+            <h3 className="modal-title">Deficiency PDF</h3>
+            <p className="modal-subtitle">{property.address}</p>
+          </div>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div
+          className="drop-zone"
+          onDrop={handleDrop}
+          onDragOver={(e) => e.preventDefault()}
+          onClick={() => inputRef.current.click()}
+        >
+          {file ? (
+            <div className="drop-placeholder">
+              <span className="drop-icon">📄</span>
+              <span className="drop-label">{file.name}</span>
+              <span className="drop-hint">Click to change file</span>
+            </div>
+          ) : property.deficiency_pdf_url ? (
+            <div className="drop-placeholder">
+              <span className="drop-icon">📄</span>
+              <span className="drop-label">PDF already uploaded</span>
+              <span className="drop-hint">Drop new PDF here or click to replace</span>
+            </div>
+          ) : (
+            <div className="drop-placeholder">
+              <span className="drop-icon">📄</span>
+              <span className="drop-label">Drop PDF here or click to browse</span>
+              <span className="drop-hint">PDF only · max 15 MB</span>
+            </div>
+          )}
+          <input
+            ref={inputRef}
+            type="file"
+            accept="application/pdf"
+            style={{ display: 'none' }}
+            onChange={handleFile}
+          />
+        </div>
+        {error && <p className="modal-error">{error}</p>}
+        <div className="modal-actions">
+          <button className="btn-secondary" onClick={onClose}>Cancel</button>
+          {property.deficiency_pdf_url && (
+            <button
+              className="btn-secondary"
+              style={{ color: '#dc2626', borderColor: '#dc2626' }}
+              onClick={() => onRemove(property.id)}
+            >
+              Remove PDF
+            </button>
+          )}
+          <button className="btn-primary" onClick={handleUpload} disabled={!file || uploading}>
+            {uploading ? 'Uploading…' : 'Upload PDF'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function StatusUpdateModal({ property, onClose, onSuccess }) {
   const [selected, setSelected] = useState(property.current_status);
   const [saving, setSaving]     = useState(false);
@@ -197,6 +305,7 @@ export default function AdminDashboard() {
   const [search, setSearch]             = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
   const [photoModal, setPhotoModal]     = useState(null);
+  const [pdfModal, setPdfModal]         = useState(null);
   const [statusModal, setStatusModal]   = useState(null);
   const [jobNumbers, setJobNumbers]     = useState({});
 
@@ -227,6 +336,12 @@ export default function AdminDashboard() {
   const handlePhotoSuccess = (rowId, photoUrl) => {
     setProperties((prev) =>
       prev.map((p) => p.id === rowId ? { ...p, deficiency_photo_url: photoUrl } : p)
+    );
+  };
+
+  const handlePdfSuccess = (rowId, pdfUrl) => {
+    setProperties((prev) =>
+      prev.map((p) => p.id === rowId ? { ...p, deficiency_pdf_url: pdfUrl } : p)
     );
   };
 
@@ -267,6 +382,22 @@ export default function AdminDashboard() {
       setPhotoModal(null);
     } catch (err) {
       console.error('Failed to remove photo', err);
+    }
+  };
+
+  const handleRemovePdf = async (rowId) => {
+    if (!window.confirm('Remove this PDF?')) return;
+    try {
+      const token = sessionStorage.getItem('adminToken');
+      await axios.delete(`${config.apiUrl}/api/admin/properties/${rowId}/pdf`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setProperties((prev) =>
+        prev.map((p) => p.id === rowId ? { ...p, deficiency_pdf_url: '' } : p)
+      );
+      setPdfModal(null);
+    } catch (err) {
+      console.error('Failed to remove PDF', err);
     }
   };
 
@@ -374,7 +505,7 @@ export default function AdminDashboard() {
                     <th>Service</th>
                     <th>Status</th>
                     <th>Job #</th>
-                    <th>Photo</th>
+                    <th>Photo / PDF</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -400,19 +531,31 @@ export default function AdminDashboard() {
                           />
                         </td>
                         <td className="ad-center">
-                          {p.deficiency_photo_url ? (
-                            <a href={p.deficiency_photo_url} target="_blank" rel="noreferrer" className="ad-photo-link">View</a>
-                          ) : (
-                            <span className="ad-none">—</span>
-                          )}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center' }}>
+                            {p.deficiency_photo_url ? (
+                              <a href={p.deficiency_photo_url} target="_blank" rel="noreferrer" className="ad-photo-link">Photo</a>
+                            ) : (
+                              <span className="ad-none">—</span>
+                            )}
+                            {p.deficiency_pdf_url ? (
+                              <a href={p.deficiency_pdf_url} target="_blank" rel="noreferrer" className="ad-photo-link">PDF</a>
+                            ) : (
+                              <span className="ad-none">—</span>
+                            )}
+                          </div>
                         </td>
                         <td>
                           <div className="ad-action-btns">
                             <button className="ad-action-btn" onClick={() => setStatusModal(p)}>Update Status</button>
                             {normalise(p.current_status) !== 'passed' && normalise(p.current_status) !== 'cancelled' && (
-                              <button className="ad-action-btn ad-photo-btn" onClick={() => setPhotoModal(p)}>
-                                {p.deficiency_photo_url ? 'Replace Photo' : 'Upload Photo'}
-                              </button>
+                              <>
+                                <button className="ad-action-btn ad-photo-btn" onClick={() => setPhotoModal(p)}>
+                                  {p.deficiency_photo_url ? 'Replace Photo' : 'Upload Photo'}
+                                </button>
+                                <button className="ad-action-btn ad-photo-btn" onClick={() => setPdfModal(p)}>
+                                  {p.deficiency_pdf_url ? 'Replace PDF' : 'Upload PDF'}
+                                </button>
+                              </>
                             )}
                           </div>
                         </td>
@@ -463,13 +606,24 @@ export default function AdminDashboard() {
                           <a href={p.deficiency_photo_url} target="_blank" rel="noreferrer" className="ad-photo-link">View</a>
                         </span>
                       )}
+                      {p.deficiency_pdf_url && (
+                        <span className="ad-card-meta-item">
+                          <span className="ad-card-meta-label">PDF</span>
+                          <a href={p.deficiency_pdf_url} target="_blank" rel="noreferrer" className="ad-photo-link">View</a>
+                        </span>
+                      )}
                     </div>
                     <div className="ad-card-footer">
                       <button className="ad-action-btn" onClick={() => setStatusModal(p)}>Update Status</button>
                       {normalise(p.current_status) !== 'passed' && normalise(p.current_status) !== 'cancelled' && (
-                        <button className="ad-action-btn ad-photo-btn" onClick={() => setPhotoModal(p)}>
-                          {p.deficiency_photo_url ? 'Replace Photo' : 'Upload Photo'}
-                        </button>
+                        <>
+                          <button className="ad-action-btn ad-photo-btn" onClick={() => setPhotoModal(p)}>
+                            {p.deficiency_photo_url ? 'Replace Photo' : 'Upload Photo'}
+                          </button>
+                          <button className="ad-action-btn ad-photo-btn" onClick={() => setPdfModal(p)}>
+                            {p.deficiency_pdf_url ? 'Replace PDF' : 'Upload PDF'}
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
@@ -486,6 +640,14 @@ export default function AdminDashboard() {
           onClose={() => setPhotoModal(null)}
           onSuccess={handlePhotoSuccess}
           onRemove={handleRemovePhoto}
+        />
+      )}
+      {pdfModal && (
+        <PdfUploadModal
+          property={pdfModal}
+          onClose={() => setPdfModal(null)}
+          onSuccess={handlePdfSuccess}
+          onRemove={handleRemovePdf}
         />
       )}
       {statusModal && (

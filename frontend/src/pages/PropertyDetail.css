@@ -303,3 +303,95 @@
   .pd-card    { padding: 20px 16px; }
   .pd-details-grid { grid-template-columns: 1fr; }
 }
+
+/* ── PDF Viewer Modal ─────────────────────────────────────────── */
+.pd-pdf-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.pd-pdf-modal {
+  background: #fff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 860px;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+}
+
+.pd-pdf-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+.pd-pdf-title {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #111827;
+}
+
+.pd-pdf-close {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.15s;
+  line-height: 1;
+}
+.pd-pdf-close:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.pd-pdf-body {
+  flex: 1;
+  overflow: hidden;
+}
+
+.pd-pdf-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.pd-pdf-btn {
+  margin-top: 16px;
+  padding: 10px 20px;
+  background: #1e3a5f;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.pd-pdf-btn:hover { background: #162d4a; }
+
+@media (max-width: 600px) {
+  .pd-pdf-overlay { padding: 0; }
+  .pd-pdf-modal {
+    border-radius: 0;
+    height: 100dvh;
+    max-width: 100%;
+  }
+}
