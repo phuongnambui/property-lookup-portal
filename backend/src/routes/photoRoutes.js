@@ -1,15 +1,4 @@
 // routes/photoRoutes.js
-// Handles deficiency photo and PDF uploads via Cloudinary.
-// Files are stored permanently on Cloudinary — URLs are written back to Google Sheets.
-//
-// Required env vars:
-//   CLOUDINARY_CLOUD_NAME
-//   CLOUDINARY_API_KEY
-//   CLOUDINARY_API_SECRET
-//
-// Install deps:
-//   npm install cloudinary multer multer-storage-cloudinary
-
 const express = require('express');
 const router  = express.Router();
 const multer  = require('multer');
@@ -24,13 +13,13 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// ─── Photo storage (images) ──────────────────────────────────────────────────
+// ─── Photo: uses CloudinaryStorage (same as before) ──────────────────────────
 const photoStorage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder:           'vnco-deficiency-photos',
-    allowed_formats:  ['jpg', 'jpeg', 'png', 'webp', 'heic'],
-    transformation:   [{ width: 1600, crop: 'limit', quality: 'auto' }],
+    folder:          'vnco-deficiency-photos',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'heic'],
+    transformation:  [{ width: 1600, crop: 'limit', quality: 'auto' }],
   },
 });
 
@@ -39,18 +28,11 @@ const uploadPhoto = multer({
   limits:  { fileSize: 15 * 1024 * 1024 },
 });
 
-// ─── PDF storage (raw) ───────────────────────────────────────────────────────
-const pdfStorage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder:        'vnco-deficiency-pdfs',
-    resource_type: 'raw',
-    format:        'pdf',
-  },
-});
-
+// ─── PDF: uses memoryStorage + upload_stream (resource_type raw) ──────────────
+// CloudinaryStorage doesn't reliably support resource_type: raw,
+// so we buffer in memory and stream directly to Cloudinary instead.
 const uploadPdf = multer({
-  storage: pdfStorage,
+  storage: multer.memoryStorage(),
   limits:  { fileSize: 15 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     if (file.mimetype === 'application/pdf') {
@@ -62,12 +44,6 @@ const uploadPdf = multer({
 });
 
 // ─── POST /api/admin/upload-photo ────────────────────────────────────────────
-//
-// Multipart form fields:
-//   photo  — the image file
-//   rowId  — the sheet row id (1-based, from sheetsService)
-//
-// Returns: { success: true, photoUrl: "https://res.cloudinary.com/..." }
 router.post('/upload-photo', uploadPhoto.single('photo'), async (req, res) => {
   try {
     if (!req.file) {
@@ -87,12 +63,6 @@ router.post('/upload-photo', uploadPhoto.single('photo'), async (req, res) => {
 });
 
 // ─── POST /api/admin/upload-pdf ──────────────────────────────────────────────
-//
-// Multipart form fields:
-//   pdf    — the PDF file
-//   rowId  — the sheet row id (1-based, from sheetsService)
-//
-// Returns: { success: true, pdfUrl: "https://res.cloudinary.com/..." }
 router.post('/upload-pdf', uploadPdf.single('pdf'), async (req, res) => {
   try {
     if (!req.file) {
@@ -102,7 +72,20 @@ router.post('/upload-pdf', uploadPdf.single('pdf'), async (req, res) => {
     if (!rowId || isNaN(rowId)) {
       return res.status(400).json({ error: 'rowId is required and must be a number.' });
     }
-    const pdfUrl = req.file.path;
+
+    const pdfUrl = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          resource_type: 'raw',
+          folder:        'vnco-deficiency-pdfs',
+          public_id:     `property-${rowId}-${Date.now()}`,
+          format:        'pdf',
+        },
+        (err, result) => (err ? reject(err) : resolve(result.secure_url)),
+      );
+      stream.end(req.file.buffer);
+    });
+
     await updatePdfUrl(rowId, pdfUrl);
     return res.json({ success: true, pdfUrl });
   } catch (err) {
@@ -112,8 +95,6 @@ router.post('/upload-pdf', uploadPdf.single('pdf'), async (req, res) => {
 });
 
 // ─── DELETE /api/admin/delete-photo ──────────────────────────────────────────
-//
-// Body: { rowId, publicId }   (publicId from Cloudinary — optional convenience)
 router.delete('/delete-photo', async (req, res) => {
   try {
     const { rowId, publicId } = req.body;
