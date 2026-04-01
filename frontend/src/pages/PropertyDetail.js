@@ -1,7 +1,12 @@
 // pages/PropertyDetail.js
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
 import './PropertyDetail.css';
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 const STAGES = [
   { key: 'Request Received',  label: 'Request\nReceived' },
@@ -101,27 +106,57 @@ function Timeline({ currentStatus }) {
 
 // ─── PDF Viewer Modal ─────────────────────────────────────────────────────────
 function PdfViewerModal({ url, onClose }) {
+  const [numPages, setNumPages]   = useState(null);
+  const [pageWidth, setPageWidth] = useState(800);
+
   useEffect(() => {
     document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
+    const updateWidth = () => {
+      const modal = document.querySelector('.pd-pdf-modal');
+      if (modal) setPageWidth(modal.clientWidth - 48);
+    };
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('resize', updateWidth);
+    };
   }, []);
-
-  const embedUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
 
   return (
     <div className="pd-pdf-overlay" onClick={onClose}>
       <div className="pd-pdf-modal" onClick={(e) => e.stopPropagation()}>
         <div className="pd-pdf-header">
           <span className="pd-pdf-title">Deficiency Report</span>
-          <button className="pd-pdf-close" onClick={onClose}>✕</button>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <a
+              href={url}
+              target="_blank"
+              rel="noreferrer"
+              style={{ fontSize: '0.8rem', color: '#6b7280', textDecoration: 'underline' }}
+            >
+              Open in new tab
+            </a>
+            <button className="pd-pdf-close" onClick={onClose}>✕</button>
+          </div>
         </div>
         <div className="pd-pdf-body">
-          <iframe
-            src={embedUrl}
-            title="Deficiency PDF"
-            className="pd-pdf-frame"
-            allow="fullscreen"
-          />
+          <Document
+            file={url}
+            onLoadSuccess={({ numPages }) => setNumPages(numPages)}
+            loading={<div className="pd-pdf-loading">Loading PDF…</div>}
+            error={<div className="pd-pdf-error">Failed to load PDF. <a href={url} target="_blank" rel="noreferrer">Open in new tab</a></div>}
+          >
+            {Array.from({ length: numPages || 0 }, (_, i) => (
+              <Page
+                key={i + 1}
+                pageNumber={i + 1}
+                width={pageWidth}
+                renderTextLayer={true}
+                renderAnnotationLayer={true}
+              />
+            ))}
+          </Document>
         </div>
       </div>
     </div>
@@ -254,7 +289,6 @@ export default function PropertyDetail() {
         </div>
       </div>
 
-      {/* PDF viewer modal */}
       {pdfOpen && property.deficiency_pdf_url && (
         <PdfViewerModal url={property.deficiency_pdf_url} onClose={() => setPdfOpen(false)} />
       )}

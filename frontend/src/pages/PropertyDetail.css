@@ -395,3 +395,8 @@
     max-width: 100%;
   }
 }
+
+.pd-pdf-loading { padding: 40px; text-align: center; color: #6b7280; font-size: 14px; }
+.pd-pdf-error   { padding: 40px; text-align: center; color: #dc2626; font-size: 14px; }
+.pd-pdf-error a { color: #dc2626; }
+.pd-pdf-body    { flex: 1; overflow-y: auto; padding: 24px; background: #f3f4f6; }

@@ -86,10 +86,9 @@ router.post('/upload-pdf', uploadPdf.single('pdf'), async (req, res) => {
     const pdfUrl = await new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         {
-          resource_type: 'raw',
+          resource_type: 'auto',
           folder:        'vnco-deficiency-pdfs',
           public_id:     `property-${rowId}-${Date.now()}`,
-          format:        'pdf',
         },
         (err, result) => (err ? reject(err) : resolve(result.secure_url)),
       );
