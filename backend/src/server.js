@@ -1,131 +1,193 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const { adminLogin, verifyAdminToken } = require('./adminStore');
-const {
-  getPropertiesByCustomerCode,
-  getAllProperties,
-  updatePropertyStatus,
-  updatePhotoUrl,
-  VALID_STATUSES,
-} = require('./services/sheetsService');
-const photoRoutes = require('./routes/photoRoutes');
+// services/sheetsService.js
+const { google } = require('googleapis');
 
-const app = express();
-const PORT = process.env.PORT || 5001;
-
-app.use(express.json());
-app.use(cors({ origin: '*', credentials: true }));
-
-function getToken(req) {
-  return req.headers.authorization?.replace('Bearer ', '');
+function getAuth() {
+  return new google.auth.GoogleAuth({
+    credentials: {
+      client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+      private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    },
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  });
 }
 
-app.get('/test', (req, res) => {
-  res.json({ message: 'Server is running!' });
-});
+function getSheetsClient() {
+  return google.sheets({ version: 'v4', auth: getAuth() });
+}
 
-app.get('/api/status-flow', (req, res) => {
-  res.json({ statuses: VALID_STATUSES });
-});
+const SHEET_ID   = process.env.GOOGLE_SHEET_ID;
+const SHEET_NAME = 'Sheet1';
 
-// ── Customer ──────────────────────────────────────────────────────────────────
+// ─── Sheet columns ────────────────────────────────────────────────
+//  A: customer_code
+//  B: company_name
+//  C: address
+//  D: service_type
+//  E: current_status
+//  F: submission_date
+//  G: job_number
+//  H: deficiency_photo_url
+//  I: deficiency_pdf_url
 
-app.get('/api/customer/:customerCode', async (req, res) => {
-  try {
-    const { customerCode } = req.params;
-    const data = await getPropertiesByCustomerCode(customerCode);
-    if (!data) return res.status(404).json({ error: 'Customer code not found' });
-    return res.json(data);
-  } catch (error) {
-    console.error('Customer lookup error:', error.message);
-    return res.status(500).json({ error: 'Failed to fetch data. Please try again.' });
+const DATA_RANGE = `${SHEET_NAME}!A2:I`;
+
+// Canonical status names — these are what get stored in the sheet
+const VALID_STATUSES = [
+  'Request Received',
+  'Processing',
+  'Submitted to City',
+  'Passed',
+  'Failed',
+  'Cancelled',
+];
+
+// Statuses that clear deficiency data — request is over, no action needed
+const TERMINAL_STATUSES = ['passed', 'cancelled'];
+
+// Normalise whatever the brother types into canonical form
+function normaliseStatus(raw) {
+  if (!raw) return '';
+  const lower = raw.trim().toLowerCase();
+  const match = VALID_STATUSES.find((s) => s.toLowerCase() === lower);
+  return match || raw.trim();
+}
+
+function parseRow(row, rowIndex) {
+  const [
+    customer_code        = '',
+    company_name         = '',
+    address              = '',
+    service_type         = '',
+    current_status_raw   = '',
+    submission_date      = '',
+    job_number_raw       = '',
+    deficiency_photo_url = '',
+    deficiency_pdf_url   = '',
+  ] = row;
+
+  const current_status = normaliseStatus(current_status_raw);
+  const isTerminal = TERMINAL_STATUSES.includes(current_status.toLowerCase());
+
+  return {
+    id:                   rowIndex,
+    customer_code:        customer_code.trim(),
+    company_name:         company_name.trim(),
+    address:              address.trim(),
+    service_type:         service_type.trim(),
+    current_status,
+    submission_date:      submission_date.trim(),
+    job_number:           job_number_raw.trim(),
+    deficiency_photo_url: isTerminal ? '' : deficiency_photo_url.trim(),
+    deficiency_pdf_url:   isTerminal ? '' : deficiency_pdf_url.trim(),
+  };
+}
+
+async function getPropertiesByCustomerCode(customerCode) {
+  const sheets = getSheetsClient();
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: SHEET_ID,
+    range: DATA_RANGE,
+  });
+  const rows = res.data.values || [];
+  const properties = rows
+    .map((row, i) => parseRow(row, i + 1))
+    .filter((p) => p.customer_code.toUpperCase() === customerCode.toUpperCase());
+
+  if (properties.length === 0) return null;
+
+  return {
+    customer_code: customerCode.toUpperCase(),
+    company_name:  properties[0].company_name,
+    properties,
+  };
+}
+
+async function getAllProperties() {
+  const sheets = getSheetsClient();
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: SHEET_ID,
+    range: DATA_RANGE,
+  });
+  const rows = res.data.values || [];
+  return rows.map((row, i) => parseRow(row, i + 1));
+}
+
+// Update deficiency_photo_url — column H
+async function updatePhotoUrl(rowId, photoUrl) {
+  const sheets   = getSheetsClient();
+  const sheetRow = rowId + 1;
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: SHEET_ID,
+    range:         `${SHEET_NAME}!H${sheetRow}`,
+    valueInputOption: 'RAW',
+    requestBody:   { values: [[photoUrl]] },
+  });
+}
+
+// Update deficiency_pdf_url — column I
+async function updatePdfUrl(rowId, pdfUrl) {
+  const sheets   = getSheetsClient();
+  const sheetRow = rowId + 1;
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: SHEET_ID,
+    range:         `${SHEET_NAME}!I${sheetRow}`,
+    valueInputOption: 'RAW',
+    requestBody:   { values: [[pdfUrl]] },
+  });
+}
+
+// Update current_status — column E, normalise before writing
+async function updatePropertyStatus(rowId, newStatus) {
+  const canonical = normaliseStatus(newStatus);
+  if (!VALID_STATUSES.map(s => s.toLowerCase()).includes(canonical.toLowerCase())) {
+    throw new Error(`Invalid status: ${newStatus}`);
   }
-});
 
-// ── Admin ─────────────────────────────────────────────────────────────────────
+  const sheets   = getSheetsClient();
+  const sheetRow = rowId + 1;
 
-app.post('/api/admin/login', async (req, res) => {
-  try {
-    const { username, password } = req.body;
-    const result = await adminLogin(username, password);
-    return res.json(result);
-  } catch (error) {
-    return res.status(401).json({ error: error.message });
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: SHEET_ID,
+    range:         `${SHEET_NAME}!E${sheetRow}`,
+    valueInputOption: 'RAW',
+    requestBody:   { values: [[canonical]] },
+  });
+
+  // For any terminal status, auto-clear photo and PDF URLs in the sheet
+  if (TERMINAL_STATUSES.includes(canonical.toLowerCase())) {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SHEET_ID,
+      range:         `${SHEET_NAME}!H${sheetRow}`,
+      valueInputOption: 'RAW',
+      requestBody:   { values: [['']] },
+    });
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SHEET_ID,
+      range:         `${SHEET_NAME}!I${sheetRow}`,
+      valueInputOption: 'RAW',
+      requestBody:   { values: [['']] },
+    });
   }
-});
+}
 
-app.get('/api/admin/verify', (req, res) => {
-  try {
-    const token = getToken(req);
-    if (!token) return res.status(401).json({ error: 'No token provided' });
-    verifyAdminToken(token);
-    return res.json({ valid: true });
-  } catch {
-    return res.status(401).json({ error: 'Invalid or expired token' });
-  }
-});
+// Update job_number — column G
+async function updateJobNumber(rowId, jobNumber) {
+  const sheets   = getSheetsClient();
+  const sheetRow = rowId + 1;
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: SHEET_ID,
+    range:         `${SHEET_NAME}!G${sheetRow}`,
+    valueInputOption: 'RAW',
+    requestBody:   { values: [[jobNumber]] },
+  });
+}
 
-app.get('/api/admin/properties', async (req, res) => {
-  try {
-    const token = getToken(req);
-    if (!token) return res.status(401).json({ error: 'No token provided' });
-    verifyAdminToken(token);
-    const properties = await getAllProperties();
-    return res.json({ properties });
-  } catch (error) {
-    console.error('Error fetching properties:', error.message);
-    return res.status(500).json({ error: 'Failed to fetch properties from Google Sheets.' });
-  }
-});
-
-app.patch('/api/admin/properties/:rowId/status', async (req, res) => {
-  try {
-    const token = getToken(req);
-    if (!token) return res.status(401).json({ error: 'No token provided' });
-    verifyAdminToken(token);
-    const rowId = parseInt(req.params.rowId, 10);
-    const { status } = req.body;
-    if (!status || !VALID_STATUSES.includes(status)) {
-      return res.status(400).json({
-        error: `Invalid status. Must be one of: ${VALID_STATUSES.join(', ')}`,
-      });
-    }
-    await updatePropertyStatus(rowId, status);
-    return res.json({ success: true, rowId, status });
-  } catch (error) {
-    console.error('Status update error:', error.message);
-    return res.status(500).json({ error: 'Failed to update status.' });
-  }
-});
-
-app.use('/api/admin', (req, res, next) => {
-  try {
-    const token = getToken(req);
-    if (!token) return res.status(401).json({ error: 'No token provided' });
-    verifyAdminToken(token);
-    next();
-  } catch {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-}, photoRoutes);
-
-app.delete('/api/admin/properties/:rowId/photo', async (req, res) => {
-  try {
-    const token = getToken(req);
-    if (!token) return res.status(401).json({ error: 'No token provided' });
-    verifyAdminToken(token);
-    const rowId = parseInt(req.params.rowId, 10);
-    await updatePhotoUrl(rowId, '');
-    return res.json({ success: true });
-  } catch (error) {
-    console.error('Photo remove error:', error.message);
-    return res.status(500).json({ error: 'Failed to remove photo.' });
-  }
-});
-
-// ── Start ─────────────────────────────────────────────────────────────────────
-
-app.listen(PORT, () => {
-  console.log(`⚡️ Server started on port ${PORT}`);
-});
+module.exports = {
+  getPropertiesByCustomerCode,
+  getAllProperties,
+  updatePhotoUrl,
+  updatePdfUrl,
+  updatePropertyStatus,
+  updateJobNumber,
+  VALID_STATUSES,
+};

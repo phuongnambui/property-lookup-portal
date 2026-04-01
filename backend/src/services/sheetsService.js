@@ -27,8 +27,9 @@ const SHEET_NAME = 'Sheet1';
 //  F: submission_date
 //  G: job_number
 //  H: deficiency_photo_url
+//  I: deficiency_pdf_url
 
-const DATA_RANGE = `${SHEET_NAME}!A2:H`;
+const DATA_RANGE = `${SHEET_NAME}!A2:I`;
 
 // Canonical status names — these are what get stored in the sheet
 const VALID_STATUSES = [
@@ -61,6 +62,7 @@ function parseRow(row, rowIndex) {
     submission_date      = '',
     job_number_raw       = '',
     deficiency_photo_url = '',
+    deficiency_pdf_url   = '',
   ] = row;
 
   const current_status = normaliseStatus(current_status_raw);
@@ -76,6 +78,7 @@ function parseRow(row, rowIndex) {
     submission_date:      submission_date.trim(),
     job_number:           job_number_raw.trim(),
     deficiency_photo_url: isTerminal ? '' : deficiency_photo_url.trim(),
+    deficiency_pdf_url:   isTerminal ? '' : deficiency_pdf_url.trim(),
   };
 }
 
@@ -121,6 +124,18 @@ async function updatePhotoUrl(rowId, photoUrl) {
   });
 }
 
+// Update deficiency_pdf_url — column I
+async function updatePdfUrl(rowId, pdfUrl) {
+  const sheets   = getSheetsClient();
+  const sheetRow = rowId + 1;
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: SHEET_ID,
+    range:         `${SHEET_NAME}!I${sheetRow}`,
+    valueInputOption: 'RAW',
+    requestBody:   { values: [[pdfUrl]] },
+  });
+}
+
 // Update current_status — column E, normalise before writing
 async function updatePropertyStatus(rowId, newStatus) {
   const canonical = normaliseStatus(newStatus);
@@ -138,11 +153,17 @@ async function updatePropertyStatus(rowId, newStatus) {
     requestBody:   { values: [[canonical]] },
   });
 
-  // For any terminal status, auto-clear photo URL in the sheet
+  // For any terminal status, auto-clear photo and PDF URLs in the sheet
   if (TERMINAL_STATUSES.includes(canonical.toLowerCase())) {
     await sheets.spreadsheets.values.update({
       spreadsheetId: SHEET_ID,
       range:         `${SHEET_NAME}!H${sheetRow}`,
+      valueInputOption: 'RAW',
+      requestBody:   { values: [['']] },
+    });
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SHEET_ID,
+      range:         `${SHEET_NAME}!I${sheetRow}`,
       valueInputOption: 'RAW',
       requestBody:   { values: [['']] },
     });
@@ -165,6 +186,7 @@ module.exports = {
   getPropertiesByCustomerCode,
   getAllProperties,
   updatePhotoUrl,
+  updatePdfUrl,
   updatePropertyStatus,
   updateJobNumber,
   VALID_STATUSES,
