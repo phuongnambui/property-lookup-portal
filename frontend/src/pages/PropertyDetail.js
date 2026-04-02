@@ -106,61 +106,12 @@ function Timeline({ currentStatus }) {
 
 // ─── PDF Viewer Modal ─────────────────────────────────────────────────────────
 function PdfViewerModal({ url, onClose }) {
-  const [numPages, setNumPages]   = useState(null);
-  const [pageWidth, setPageWidth] = useState(800);
-
   useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    const updateWidth = () => {
-      const modal = document.querySelector('.pd-pdf-modal');
-      if (modal) setPageWidth(modal.clientWidth - 48);
-    };
-    updateWidth();
-    window.addEventListener('resize', updateWidth);
-    return () => {
-      document.body.style.overflow = '';
-      window.removeEventListener('resize', updateWidth);
-    };
+    window.open(url, '_blank');
+    onClose();
   }, []);
 
-  return (
-    <div className="pd-pdf-overlay" onClick={onClose}>
-      <div className="pd-pdf-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="pd-pdf-header">
-          <span className="pd-pdf-title">Deficiency Report</span>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <a
-              href={url}
-              target="_blank"
-              rel="noreferrer"
-              style={{ fontSize: '0.8rem', color: '#6b7280', textDecoration: 'underline' }}
-            >
-              Open in new tab
-            </a>
-            <button className="pd-pdf-close" onClick={onClose}>✕</button>
-          </div>
-        </div>
-        <div className="pd-pdf-body">
-          <Document
-            file={url}
-            onLoadSuccess={({ numPages }) => setNumPages(numPages)}
-            loading={<div className="pd-pdf-loading">Loading PDF…</div>}
-            error={<div className="pd-pdf-error">Failed to load PDF. <a href={url} target="_blank" rel="noreferrer">Open in new tab</a></div>}
-          >
-            {Array.from({ length: numPages || 0 }, (_, i) => (
-              <Page
-                key={i + 1}
-                pageNumber={i + 1}
-                width={pageWidth}
-                renderTextLayer={true}
-                renderAnnotationLayer={true}
-              />
-            ))}
-          </Document>
-        </div>
-      </div>
-    </div>
-  );
+  return null;
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -232,10 +183,6 @@ export default function PropertyDetail() {
               <span className="pd-def-icon">⚠️</span>
               <div>
                 <p className="pd-card-title" style={{ marginBottom: 4 }}>Deficiency Recorded</p>
-                <p className="pd-def-note">
-                  A deficiency was identified during the survey. Please review
-                  and address the issue before resubmission.
-                </p>
               </div>
             </div>
             <div className="pd-photo-wrap">
@@ -258,10 +205,6 @@ export default function PropertyDetail() {
               <span className="pd-def-icon">📄</span>
               <div>
                 <p className="pd-card-title" style={{ marginBottom: 4 }}>Deficiency Report</p>
-                <p className="pd-def-note">
-                  A detailed deficiency report is available. Please review it and
-                  address all items before resubmission.
-                </p>
               </div>
             </div>
             <button className="pd-pdf-btn" onClick={() => setPdfOpen(true)}>
