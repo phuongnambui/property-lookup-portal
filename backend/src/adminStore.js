@@ -1,20 +1,15 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-const ADMIN_CREDENTIALS = {
-  username: 'tnguyen0193@gmail.com',
-  passwordHash: '$2b$10$O7CRsCbyQNiOnUAp21lk7ucbep0Kme3qfTD7.Bjn9jdOVF5afF2Pi'
-};
-
-const verifyPassword = async (password, hash) => {
-  return await bcrypt.compare(password, hash);
-};
+if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET env var must be set');
+if (!process.env.ADMIN_USERNAME) throw new Error('ADMIN_USERNAME env var must be set');
+if (!process.env.ADMIN_PASSWORD_HASH) throw new Error('ADMIN_PASSWORD_HASH env var must be set');
 
 const adminLogin = async (username, password) => {
-  if (username.toLowerCase() !== ADMIN_CREDENTIALS.username.toLowerCase()) {
+  if (username.toLowerCase() !== process.env.ADMIN_USERNAME.toLowerCase()) {
     throw new Error('Invalid credentials');
   }
-  const isValid = await verifyPassword(password, ADMIN_CREDENTIALS.passwordHash);
+  const isValid = await bcrypt.compare(password, process.env.ADMIN_PASSWORD_HASH);
   if (!isValid) {
     throw new Error('Invalid credentials');
   }
