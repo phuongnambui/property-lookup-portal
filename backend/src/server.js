@@ -16,8 +16,16 @@ const app = express();
 const PORT = process.env.PORT || 5001;
 
 app.use(express.json());
+const allowedOrigins = [
+  'http://localhost:3000',
+  process.env.FRONTEND_URL,
+].filter(Boolean);
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: (origin, cb) => {
+    if (!origin || allowedOrigins.includes(origin)) cb(null, true);
+    else cb(new Error('Not allowed by CORS'));
+  },
   credentials: true,
 }));
 

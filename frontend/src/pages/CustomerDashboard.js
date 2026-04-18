@@ -30,6 +30,7 @@ const CustomerDashboard = () => {
   const [customerData, setCustomerData] = useState(null);
   const [loading, setLoading]           = useState(true);
   const [filter, setFilter]             = useState('All');
+  const [search, setSearch]             = useState('');
   const navigate = useNavigate();
 
   function fetchData() {
@@ -68,11 +69,20 @@ const CustomerDashboard = () => {
   };
 
   const filteredProperties = customerData?.properties.filter((p) => {
-    if (filter === 'All')         return true;
-    if (filter === 'Cancelled')   return isCancelled(p.current_status);
-    if (filter === 'Passed')      return isPassed(p.current_status);
-    if (filter === 'Failed')      return isFailed(p.current_status);
-    if (filter === 'In Progress') return !isCompleted(p.current_status) && !isCancelled(p.current_status);
+    if (filter === 'All')         { /* no status filter */ }
+    else if (filter === 'Cancelled')   { if (!isCancelled(p.current_status)) return false; }
+    else if (filter === 'Passed')      { if (!isPassed(p.current_status)) return false; }
+    else if (filter === 'Failed')      { if (!isFailed(p.current_status)) return false; }
+    else if (filter === 'In Progress') { if (isCompleted(p.current_status) || isCancelled(p.current_status)) return false; }
+
+    if (search) {
+      const q = search.toLowerCase();
+      return (
+        p.address?.toLowerCase().includes(q) ||
+        p.municipality?.toLowerCase().includes(q) ||
+        p.service_type?.toLowerCase().includes(q)
+      );
+    }
     return true;
   }) || [];
 
@@ -134,6 +144,15 @@ const CustomerDashboard = () => {
           </div>
         </div>
 
+        <div className="cd-search-row">
+          <input
+            className="cd-search"
+            placeholder="Search address, municipality, or service…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+
         {/* ── Desktop Table ── */}
         <div className="table-container">
           <table className="property-table">
@@ -141,6 +160,7 @@ const CustomerDashboard = () => {
               <tr>
                 <th>#</th>
                 <th>Address</th>
+                <th>Municipality</th>
                 <th>Service Type</th>
                 <th>Submission Date</th>
                 <th>Status</th>
@@ -150,13 +170,14 @@ const CustomerDashboard = () => {
             <tbody>
               {filteredProperties.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="empty-row">No properties found.</td>
+                  <td colSpan={7} className="empty-row">No properties found.</td>
                 </tr>
               ) : (
                 filteredProperties.map((property, index) => (
                   <tr key={property.id}>
                     <td>{index + 1}</td>
                     <td className="address-cell">{property.address}</td>
+                    <td>{property.municipality || '—'}</td>
                     <td>{property.service_type}</td>
                     <td>{property.submission_date || '—'}</td>
                     <td>
@@ -191,6 +212,12 @@ const CustomerDashboard = () => {
                 </div>
                 <div className="card-address">{property.address}</div>
                 <div className="card-meta">
+                  {property.municipality && (
+                    <span className="card-meta-item">
+                      <span className="card-meta-label">Municipality</span>
+                      {property.municipality}
+                    </span>
+                  )}
                   <span className="card-meta-item">
                     <span className="card-meta-label">Service</span>
                     {property.service_type}
