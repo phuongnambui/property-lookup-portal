@@ -28,8 +28,9 @@ const SHEET_NAME = 'Sheet1';
 //  G: job_number
 //  H: deficiency_photo_url
 //  I: deficiency_pdf_url
+//  J: municipality
 
-const DATA_RANGE = `${SHEET_NAME}!A2:I`;
+const DATA_RANGE = `${SHEET_NAME}!A2:J`;
 
 const VALID_STATUSES = [
   'Request Received',
@@ -60,6 +61,7 @@ function parseRow(row, rowIndex) {
     job_number_raw       = '',
     deficiency_photo_url = '',
     deficiency_pdf_url   = '',
+    municipality         = '',
   ] = row;
 
   const current_status = normaliseStatus(current_status_raw);
@@ -76,6 +78,7 @@ function parseRow(row, rowIndex) {
     job_number:           job_number_raw.trim(),
     deficiency_photo_url: isTerminal ? '' : deficiency_photo_url.trim(),
     deficiency_pdf_url:   isTerminal ? '' : deficiency_pdf_url.trim(),
+    municipality:         municipality.trim(),
   };
 }
 

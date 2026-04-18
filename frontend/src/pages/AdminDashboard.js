@@ -406,7 +406,8 @@ export default function AdminDashboard() {
       !search ||
       p.address?.toLowerCase().includes(search.toLowerCase()) ||
       p.customer_code?.toLowerCase().includes(search.toLowerCase()) ||
-      p.company_name?.toLowerCase().includes(search.toLowerCase());
+      p.company_name?.toLowerCase().includes(search.toLowerCase()) ||
+      p.municipality?.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = filterStatus === 'All' || p.current_status === filterStatus;
     return matchesSearch && matchesStatus;
   });
@@ -502,6 +503,7 @@ export default function AdminDashboard() {
                     <th>Code</th>
                     <th>Company</th>
                     <th>Address</th>
+                    <th>Municipality</th>
                     <th>Service</th>
                     <th>Status</th>
                     <th>Job #</th>
@@ -511,13 +513,14 @@ export default function AdminDashboard() {
                 </thead>
                 <tbody>
                   {filtered.length === 0 ? (
-                    <tr><td colSpan={8} className="ad-empty">No properties match your search.</td></tr>
+                    <tr><td colSpan={9} className="ad-empty">No properties match your search.</td></tr>
                   ) : (
                     filtered.map((p) => (
                       <tr key={p.id}>
                         <td className="ad-code">{p.customer_code}</td>
                         <td>{p.company_name}</td>
                         <td className="ad-address-cell">{p.address}</td>
+                        <td>{p.municipality || '—'}</td>
                         <td className="ad-service">{p.service_type}</td>
                         <td><StatusBadge status={p.current_status} /></td>
                         <td>
@@ -583,6 +586,12 @@ export default function AdminDashboard() {
                         <span className="ad-card-meta-label">Company</span>
                         {p.company_name}
                       </span>
+                      {p.municipality && (
+                        <span className="ad-card-meta-item">
+                          <span className="ad-card-meta-label">Municipality</span>
+                          {p.municipality}
+                        </span>
+                      )}
                       <span className="ad-card-meta-item">
                         <span className="ad-card-meta-label">Service</span>
                         {p.service_type}

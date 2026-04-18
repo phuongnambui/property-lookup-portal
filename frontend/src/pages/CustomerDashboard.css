@@ -130,6 +130,28 @@
 }
 .filter-tab-active .filter-count { background: rgba(255,255,255,0.25); }
 
+/* ── Search bar ───────────────────────────────────────────────── */
+.cd-search-row {
+  margin-bottom: 16px;
+}
+
+.cd-search {
+  width: 100%;
+  padding: 10px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  color: #374151;
+  background: rgba(255,255,255,0.92);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.cd-search:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220,38,38,0.1);
+}
+
 /* ── Desktop Table ────────────────────────────────────────────── */
 .table-container {
   background: rgba(255,255,255,0.92);
