@@ -273,6 +273,10 @@ export default function PropertyDetail() {
               <span className="pd-detail-label">Job Number</span>
               <span className="pd-detail-value">{property.job_number || '—'}</span>
             </div>
+            <div className="pd-detail-item">
+              <span className="pd-detail-label">Municipality</span>
+              <span className="pd-detail-value">{property.municipality || '—'}</span>
+            </div>
           </div>
         </div>
       </div>

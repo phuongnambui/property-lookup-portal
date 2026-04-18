@@ -79,7 +79,6 @@ const CustomerDashboard = () => {
       const q = search.toLowerCase();
       return (
         p.address?.toLowerCase().includes(q) ||
-        p.municipality?.toLowerCase().includes(q) ||
         p.service_type?.toLowerCase().includes(q)
       );
     }
@@ -160,7 +159,6 @@ const CustomerDashboard = () => {
               <tr>
                 <th>#</th>
                 <th>Address</th>
-                <th>Municipality</th>
                 <th>Service Type</th>
                 <th>Submission Date</th>
                 <th>Status</th>
@@ -170,14 +168,13 @@ const CustomerDashboard = () => {
             <tbody>
               {filteredProperties.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="empty-row">No properties found.</td>
+                  <td colSpan={6} className="empty-row">No properties found.</td>
                 </tr>
               ) : (
                 filteredProperties.map((property, index) => (
                   <tr key={property.id}>
                     <td>{index + 1}</td>
                     <td className="address-cell">{property.address}</td>
-                    <td>{property.municipality || '—'}</td>
                     <td>{property.service_type}</td>
                     <td>{property.submission_date || '—'}</td>
                     <td>
@@ -212,12 +209,6 @@ const CustomerDashboard = () => {
                 </div>
                 <div className="card-address">{property.address}</div>
                 <div className="card-meta">
-                  {property.municipality && (
-                    <span className="card-meta-item">
-                      <span className="card-meta-label">Municipality</span>
-                      {property.municipality}
-                    </span>
-                  )}
                   <span className="card-meta-item">
                     <span className="card-meta-label">Service</span>
                     {property.service_type}
