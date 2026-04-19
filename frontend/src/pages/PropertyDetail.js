@@ -1,7 +1,9 @@
 // pages/PropertyDetail.js
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import axios from 'axios';
 import { Document, Page, pdfjs } from 'react-pdf';
+import config from '../config';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import './PropertyDetail.css';
@@ -172,15 +174,49 @@ export default function PropertyDetail() {
   const navigate = useNavigate();
   const { id }   = useParams();
 
-  useEffect(() => {
-    const storedProperty = sessionStorage.getItem('selectedProperty');
+  const fetchData = useCallback(() => {
+    const code = sessionStorage.getItem('customerCode');
     const storedCustomer = sessionStorage.getItem('customerData');
-    if (!storedProperty || !storedCustomer) { navigate('/'); return; }
-    try {
-      setProperty(JSON.parse(storedProperty));
-      setCustomerData(JSON.parse(storedCustomer));
-    } catch { navigate('/'); }
-  }, [navigate, id]);
+    if (!code && !storedCustomer) { navigate('/'); return; }
+
+    if (code) {
+      axios.get(`${config.apiUrl}/api/customer/${code}`)
+        .then((res) => {
+          const fresh = res.data;
+          sessionStorage.setItem('customerData', JSON.stringify(fresh));
+          setCustomerData(fresh);
+          const prop = fresh.properties.find((p) => String(p.id) === String(id));
+          if (prop) {
+            sessionStorage.setItem('selectedProperty', JSON.stringify(prop));
+            setProperty(prop);
+          } else {
+            navigate('/dashboard');
+          }
+        })
+        .catch(() => {
+          // fall back to session cache
+          if (storedCustomer) {
+            try {
+              const cached = JSON.parse(storedCustomer);
+              setCustomerData(cached);
+              const prop = cached.properties.find((p) => String(p.id) === String(id));
+              if (prop) setProperty(prop);
+              else navigate('/dashboard');
+            } catch { navigate('/'); }
+          } else { navigate('/'); }
+        });
+    } else {
+      try {
+        const cached = JSON.parse(storedCustomer);
+        setCustomerData(cached);
+        const prop = cached.properties.find((p) => String(p.id) === String(id));
+        if (prop) setProperty(prop);
+        else navigate('/dashboard');
+      } catch { navigate('/'); }
+    }
+  }, [id, navigate]);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   if (!property || !customerData) return null;
 
@@ -202,9 +238,12 @@ export default function PropertyDetail() {
             <img src="/images/logo.png" alt="VNCO SURVEYS" className="navbar-logo" />
           </a>
         </div>
-        <span className="pd-nav-client">
-          {customerData.customer?.company_name || customerData.company_name}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button className="pd-refresh-btn" onClick={fetchData}>↺ Refresh</button>
+          <span className="pd-nav-client">
+            {customerData.customer?.company_name || customerData.company_name}
+          </span>
+        </div>
       </nav>
 
       {/* Hero */}
