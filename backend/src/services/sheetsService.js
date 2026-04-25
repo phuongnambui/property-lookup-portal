@@ -109,7 +109,9 @@ async function getAllProperties() {
     range: DATA_RANGE,
   });
   const rows = res.data.values || [];
-  return rows.map((row, i) => parseRow(row, i + 1));
+  return rows
+    .map((row, i) => parseRow(row, i + 1))
+    .filter((p) => p.customer_code !== '' || p.company_name !== '' || p.address !== '');
 }
 
 async function updatePhotoUrl(rowId, photoUrl) {
