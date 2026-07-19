@@ -35,13 +35,15 @@ const DATA_RANGE = `${SHEET_NAME}!A2:J`;
 const VALID_STATUSES = [
   'Request Received',
   'Processing',
+  'With Contractor',
   'Submitted to City',
   'Passed',
+  'Completed',
   'Failed',
   'Cancelled',
 ];
 
-const TERMINAL_STATUSES = ['passed', 'cancelled'];
+const TERMINAL_STATUSES = ['passed', 'completed', 'cancelled'];
 
 function normaliseStatus(raw) {
   if (!raw) return '';

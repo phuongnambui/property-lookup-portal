@@ -7,8 +7,10 @@ import './AdminDashboard.css';
 const STAGES = [
   'Request Received',
   'Processing',
+  'With Contractor',
   'Submitted to City',
   'Passed',
+  'Completed',
   'Failed',
   'Cancelled',
 ];
@@ -20,7 +22,7 @@ function normalise(status) {
 function StatusBadge({ status }) {
   const n = normalise(status);
   const cls =
-    n === 'passed'      ? 'badge-pass'
+    n === 'passed' || n === 'completed' ? 'badge-pass'
     : n === 'failed'    ? 'badge-fail'
     : n === 'cancelled' ? 'badge-cancelled'
     : 'badge-progress';
@@ -296,7 +298,7 @@ function StatusUpdateModal({ property, onClose, onSuccess }) {
   );
 }
 
-const TERMINAL = ['Passed', 'Cancelled'];
+const TERMINAL = ['Passed', 'Completed', 'Cancelled'];
 
 export default function AdminDashboard() {
   const [properties, setProperties]     = useState([]);
@@ -415,6 +417,7 @@ export default function AdminDashboard() {
     total:     properties.length,
     active:    properties.filter((p) => !TERMINAL.includes(p.current_status) && p.current_status !== 'Failed').length,
     pass:      properties.filter((p) => p.current_status === 'Passed').length,
+    completed: properties.filter((p) => p.current_status === 'Completed').length,
     fail:      properties.filter((p) => p.current_status === 'Failed').length,
     cancelled: properties.filter((p) => p.current_status === 'Cancelled').length,
   };
@@ -457,6 +460,10 @@ export default function AdminDashboard() {
           <div className="ad-stat">
             <span className="ad-stat-num ad-stat-pass">{stats.pass}</span>
             <span className="ad-stat-label">Passed</span>
+          </div>
+          <div className="ad-stat">
+            <span className="ad-stat-num ad-stat-pass">{stats.completed}</span>
+            <span className="ad-stat-label">Completed</span>
           </div>
           <div className="ad-stat">
             <span className="ad-stat-num ad-stat-fail">{stats.fail}</span>

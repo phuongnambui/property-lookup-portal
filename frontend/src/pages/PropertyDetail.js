@@ -22,9 +22,10 @@ function normalise(status) {
 }
 
 function isPassed(status)    { return normalise(status) === 'passed'; }
+function isCompleted(status) { return normalise(status) === 'completed'; }
 function isFailed(status)    { return normalise(status) === 'failed'; }
 function isCancelled(status) { return normalise(status) === 'cancelled'; }
-function isResult(status)    { return isPassed(status) || isFailed(status); }
+function isResult(status)    { return isPassed(status) || isCompleted(status) || isFailed(status); }
 
 // ─── Timeline ─────────────────────────────────────────────────────────────────
 function Timeline({ currentStatus }) {
@@ -45,8 +46,10 @@ function Timeline({ currentStatus }) {
   const stageKeyMap = {
     'request received':  0,
     'processing':        1,
+    'with contractor':   1,
     'submitted to city': 2,
     'passed':            3,
+    'completed':         3,
     'failed':            3,
   };
   const currentIndex = stageKeyMap[norm] ?? -1;
@@ -54,8 +57,9 @@ function Timeline({ currentStatus }) {
   const getState = (stageKey, index) => {
     const sk = stageKey.toLowerCase();
     if (sk === 'result') {
-      if (isPassed(currentStatus)) return 'pass';
-      if (isFailed(currentStatus)) return 'fail';
+      if (isPassed(currentStatus))    return 'pass';
+      if (isCompleted(currentStatus)) return 'pass';
+      if (isFailed(currentStatus))    return 'fail';
       return 'pending';
     }
     if (index < currentIndex)  return 'completed';
@@ -76,8 +80,10 @@ function Timeline({ currentStatus }) {
 
           const displayLabel =
             stage.key === 'Result' && isResult(currentStatus)
-              ? (isPassed(currentStatus) ? 'Passed' : 'Failed')
-              : stage.label;
+              ? (isFailed(currentStatus) ? 'Failed' : isCompleted(currentStatus) ? 'Completed' : 'Passed')
+              : stage.key === 'Processing' && norm === 'with contractor'
+                ? 'With\nContractor'
+                : stage.label;
 
           return (
             <React.Fragment key={stage.key}>
@@ -221,9 +227,10 @@ export default function PropertyDetail() {
   if (!property || !customerData) return null;
 
   const passed    = isPassed(property.current_status);
+  const completed = isCompleted(property.current_status);
   const cancelled = isCancelled(property.current_status);
 
-  const badgeCls = passed                          ? 'badge-pass'
+  const badgeCls = passed || completed            ? 'badge-pass'
     : isFailed(property.current_status) ? 'badge-fail'
     : cancelled                         ? 'badge-cancelled'
     :                                     'badge-progress';
@@ -265,7 +272,7 @@ export default function PropertyDetail() {
         </div>
 
         {/* Deficiency photo */}
-        {property.deficiency_photo_url && !passed && !cancelled && (
+        {property.deficiency_photo_url && !passed && !completed && !cancelled && (
           <div className="pd-card pd-deficiency-card">
             <div className="pd-deficiency-header" style={{ alignItems: 'center' }}>
               <span className="pd-def-icon">⚠️</span>
@@ -285,7 +292,7 @@ export default function PropertyDetail() {
         )}
 
         {/* Deficiency PDF */}
-        {property.deficiency_pdf_url && !passed && !cancelled && (
+        {property.deficiency_pdf_url && !passed && !completed && !cancelled && (
           <div className="pd-card pd-deficiency-card">
             <div className="pd-deficiency-header" style={{ alignItems: 'center' }}>
               <span className="pd-def-icon">📄</span>

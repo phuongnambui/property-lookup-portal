@@ -4,7 +4,7 @@ import axios from 'axios';
 import config from '../config';
 import './CustomerDashboard.css';
 
-const FILTERS = ['All', 'In Progress', 'Passed', 'Failed', 'Cancelled'];
+const FILTERS = ['All', 'In Progress', 'Passed', 'Completed', 'Failed', 'Cancelled'];
 
 function normalise(status) {
   return (status || '').trim().toLowerCase();
@@ -12,16 +12,19 @@ function normalise(status) {
 
 function isCancelled(status) { return normalise(status) === 'cancelled'; }
 function isPassed(status)    { return normalise(status) === 'passed'; }
+function isCompleted(status) { return normalise(status) === 'completed'; }
 function isFailed(status)    { return normalise(status) === 'failed'; }
-function isCompleted(status) { return isPassed(status) || isFailed(status); }
+function isResult(status)    { return isPassed(status) || isCompleted(status) || isFailed(status); }
 
 function getStatusColor(status) {
   const n = normalise(status);
   if (n === 'passed')            return 'status-pass';
+  if (n === 'completed')         return 'status-pass';
   if (n === 'failed')            return 'status-fail';
   if (n === 'cancelled')         return 'status-cancelled';
   if (n === 'submitted to city') return 'status-submitted';
   if (n === 'processing')        return 'status-processing';
+  if (n === 'with contractor')   return 'status-processing';
   if (n === 'request received')  return 'status-received';
   return '';
 }
@@ -72,8 +75,9 @@ const CustomerDashboard = () => {
     if (filter === 'All')         { /* no status filter */ }
     else if (filter === 'Cancelled')   { if (!isCancelled(p.current_status)) return false; }
     else if (filter === 'Passed')      { if (!isPassed(p.current_status)) return false; }
+    else if (filter === 'Completed')   { if (!isCompleted(p.current_status)) return false; }
     else if (filter === 'Failed')      { if (!isFailed(p.current_status)) return false; }
-    else if (filter === 'In Progress') { if (isCompleted(p.current_status) || isCancelled(p.current_status)) return false; }
+    else if (filter === 'In Progress') { if (isResult(p.current_status) || isCancelled(p.current_status)) return false; }
 
     if (search) {
       const q = search.toLowerCase();
@@ -91,8 +95,9 @@ const CustomerDashboard = () => {
     if (f === 'All')         return all.length;
     if (f === 'Cancelled')   return all.filter(p => isCancelled(p.current_status)).length;
     if (f === 'Passed')      return all.filter(p => isPassed(p.current_status)).length;
+    if (f === 'Completed')   return all.filter(p => isCompleted(p.current_status)).length;
     if (f === 'Failed')      return all.filter(p => isFailed(p.current_status)).length;
-    if (f === 'In Progress') return all.filter(p => !isCompleted(p.current_status) && !isCancelled(p.current_status)).length;
+    if (f === 'In Progress') return all.filter(p => !isResult(p.current_status) && !isCancelled(p.current_status)).length;
     return 0;
   };
 
