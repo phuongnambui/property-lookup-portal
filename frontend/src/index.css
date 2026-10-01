@@ -1,28 +1,154 @@
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -2;
-  background-image: url('./images/background-dashboard.jpg');
-  background-size: cover;
-  background-position: center;
-  animation: kenburns 20s ease-in-out infinite alternate;
+/* ────────────────────────────────────────────────────────────────
+   Design tokens + shared primitives
+   One accent (VNCO red), cool neutrals, light + dark parity.
+   ──────────────────────────────────────────────────────────────── */
+:root {
+  color-scheme: light;
+
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --bg:         #f4f5f7;
+  --panel:      rgba(255, 255, 255, 0.94);
+  --surface:    #ffffff;
+  --surface-2:  #f8f9fb;
+  --line:       #e4e7ec;
+  --line-strong:#ccd1d9;
+  --ink:        #12161d;
+  --ink-2:      #454d5b;
+  --ink-3:      #6b7482;
+
+  --brand:      #dc2626;
+  --brand-hover:#b91c1c;
+  --brand-tint: #fee2e2;
+  --on-brand:   #ffffff;
+
+  --ok:   #17703f;  --ok-bg:   #e5f3ec;
+  --warn: #8f5200;  --warn-bg: #fbf0d9;
+  --bad:  #b42318;  --bad-bg:  #fdebe9;
+  --info: #1c4f99;  --info-bg: #e7effb;
+  --mute: #5b6371;  --mute-bg: #eceef2;
+
+  --r-field: 8px;
+  --r-card: 12px;
+  --shadow-pop: 0 12px 40px rgba(16, 22, 32, 0.18);
+  --focus: 0 0 0 3px rgba(220, 38, 38, 0.22);
+
+  --ease: cubic-bezier(0.2, 0, 0, 1);
 }
 
-@keyframes kenburns {
-  0%   { transform: scale(1)    translateX(0)   translateY(0); }
-  100% { transform: scale(1.08) translateX(-1%) translateY(-1%); }
-}
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  background: #1b2430;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+/* Brand photo, fixed behind every page */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: url('./images/background-dashboard.jpg') center / cover no-repeat;
+  animation: kenburns 24s ease-in-out infinite alternate;
 }
+@keyframes kenburns {
+  0%   { transform: scale(1); }
+  100% { transform: scale(1.06) translate(-1%, -1%); }
+}
+
+h1, h2, h3, p { margin: 0; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: inherit; }
+code { font-family: var(--font-mono); }
+
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+input:focus-visible, select:focus-visible { outline: none; }
+
+::selection { background: var(--brand-tint); color: var(--ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ── Top bar (customer, detail, admin share one look) ─────────── */
+.navbar, .pd-nav, .ad-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 60px;
+  padding: 0 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.navbar-logo { height: 28px; width: auto; display: block; }
+
+/* Top-bar buttons: outlined, red on hover */
+.refresh-btn, .pd-refresh-btn, .pd-back-btn, .ad-refresh-btn, .logout-btn, .ad-logout-btn {
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-field);
+  background: transparent;
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 150ms var(--ease), color 150ms var(--ease), border-color 150ms var(--ease);
+}
+.refresh-btn:hover, .pd-refresh-btn:hover, .pd-back-btn:hover,
+.ad-refresh-btn:hover, .logout-btn:hover, .ad-logout-btn:hover {
+  background: var(--brand-tint);
+  color: var(--brand);
+  border-color: var(--brand);
+}
+
+/* ── Status language: dot + label, one colour per meaning ─────── */
+.status-badge, .ad-badge, .pd-status-badge {
+  --tone: var(--mute);
+  --tone-bg: var(--mute-bg);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 10px 3px 8px;
+  border-radius: 999px;
+  background: var(--tone-bg);
+  color: var(--tone);
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.status-badge::before, .ad-badge::before, .pd-status-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.status-pass, .badge-pass             { --tone: var(--ok);   --tone-bg: var(--ok-bg); }
+.status-fail, .badge-fail             { --tone: var(--bad);  --tone-bg: var(--bad-bg); }
+.status-processing, .badge-progress   { --tone: var(--warn); --tone-bg: var(--warn-bg); }
+.status-submitted                     { --tone: var(--info); --tone-bg: var(--info-bg); }
+.status-cancelled, .badge-cancelled,
+.status-received                      { --tone: var(--mute); --tone-bg: var(--mute-bg); }

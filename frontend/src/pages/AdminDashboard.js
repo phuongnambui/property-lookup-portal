@@ -19,6 +19,15 @@ function normalise(status) {
   return (status || '').trim().toLowerCase();
 }
 
+function DropIcon() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5" />
+      <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
+    </svg>
+  );
+}
+
 function StatusBadge({ status }) {
   const n = normalise(status);
   const cls =
@@ -94,7 +103,7 @@ function PhotoUploadModal({ property, onClose, onSuccess, onRemove }) {
             <img src={preview} alt="Preview" className="drop-preview" />
           ) : (
             <div className="drop-placeholder">
-              <span className="drop-icon">📷</span>
+              <span className="drop-icon"><DropIcon /></span>
               <span className="drop-label">Drop image here or click to browse</span>
               <span className="drop-hint">JPG, PNG, WEBP, HEIC · max 15 MB</span>
             </div>
@@ -112,8 +121,7 @@ function PhotoUploadModal({ property, onClose, onSuccess, onRemove }) {
           <button className="btn-secondary" onClick={onClose}>Cancel</button>
           {property.deficiency_photo_url && (
             <button
-              className="btn-secondary"
-              style={{ color: '#dc2626', borderColor: '#dc2626' }}
+              className="btn-secondary btn-danger"
               onClick={() => onRemove(property.id)}
             >
               Remove Photo
@@ -190,19 +198,19 @@ function PdfUploadModal({ property, onClose, onSuccess, onRemove }) {
         >
           {file ? (
             <div className="drop-placeholder">
-              <span className="drop-icon">📄</span>
+              <span className="drop-icon"><DropIcon /></span>
               <span className="drop-label">{file.name}</span>
               <span className="drop-hint">Click to change file</span>
             </div>
           ) : property.deficiency_pdf_url ? (
             <div className="drop-placeholder">
-              <span className="drop-icon">📄</span>
+              <span className="drop-icon"><DropIcon /></span>
               <span className="drop-label">PDF already uploaded</span>
               <span className="drop-hint">Drop new PDF here or click to replace</span>
             </div>
           ) : (
             <div className="drop-placeholder">
-              <span className="drop-icon">📄</span>
+              <span className="drop-icon"><DropIcon /></span>
               <span className="drop-label">Drop PDF here or click to browse</span>
               <span className="drop-hint">PDF only · max 15 MB</span>
             </div>
@@ -220,8 +228,7 @@ function PdfUploadModal({ property, onClose, onSuccess, onRemove }) {
           <button className="btn-secondary" onClick={onClose}>Cancel</button>
           {property.deficiency_pdf_url && (
             <button
-              className="btn-secondary"
-              style={{ color: '#dc2626', borderColor: '#dc2626' }}
+              className="btn-secondary btn-danger"
               onClick={() => onRemove(property.id)}
             >
               Remove PDF
@@ -538,7 +545,7 @@ export default function AdminDashboard() {
                           />
                         </td>
                         <td className="ad-center">
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center' }}>
+                          <div className="ad-doc-links">
                             {p.deficiency_photo_url ? (
                               <a href={p.deficiency_photo_url} target="_blank" rel="noreferrer" className="ad-photo-link">Photo</a>
                             ) : (

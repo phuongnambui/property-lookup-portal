@@ -1,11 +1,4 @@
-/* App.css */
-
 .App {
   position: relative;
   min-height: 100vh;
-}
-
-@keyframes kenburns {
-  0%   { transform: scale(1)    translateX(0)   translateY(0); }
-  100% { transform: scale(1.08) translateX(-1%) translateY(-1%); }
 }

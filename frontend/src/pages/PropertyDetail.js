@@ -92,10 +92,9 @@ function Timeline({ currentStatus }) {
                   {state === 'completed' && <span>✓</span>}
                   {state === 'pass'      && <span>✓</span>}
                   {state === 'fail'      && <span>✕</span>}
-                  {state === 'current'   && <span>✓</span>}
+                  {state === 'current'   && <span>{currentIndex + 1}</span>}
                 </div>
-                {state === 'current' && <div className="tl-pulse" />}
-                <div className="tl-label">
+                                <div className="tl-label">
                   {displayLabel.split('\n').map((line, j) => (
                     <span key={j}>{line}<br /></span>
                   ))}
@@ -245,7 +244,7 @@ export default function PropertyDetail() {
             <img src="/images/logo.png" alt="VNCO SURVEYS" className="navbar-logo" />
           </a>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div className="pd-nav-right">
           <button className="pd-refresh-btn" onClick={fetchData}>↺ Refresh</button>
           <span className="pd-nav-client">
             {customerData.customer?.company_name || customerData.company_name}
@@ -267,16 +266,15 @@ export default function PropertyDetail() {
       {/* Content */}
       <div className="pd-content">
         <div className="pd-card">
-          <p className="pd-card-title">Certification Progress</p>
+          <p className="pd-card-title">Certification progress</p>
           <Timeline currentStatus={property.current_status} />
         </div>
 
         {/* Deficiency photo */}
         {property.deficiency_photo_url && !passed && !completed && !cancelled && (
           <div className="pd-card pd-deficiency-card">
-            <div className="pd-deficiency-header" style={{ alignItems: 'center' }}>
-              <span className="pd-def-icon">⚠️</span>
-                <p className="pd-card-title" style={{ margin: 0 }}>Deficiency Recorded</p>
+            <div className="pd-deficiency-header">
+              <p className="pd-card-title">Deficiency recorded</p>
             </div>
             <div className="pd-photo-wrap">
               {!imgLoaded && <div className="pd-skeleton">Loading photo…</div>}
@@ -294,36 +292,35 @@ export default function PropertyDetail() {
         {/* Deficiency PDF */}
         {property.deficiency_pdf_url && !passed && !completed && !cancelled && (
           <div className="pd-card pd-deficiency-card">
-            <div className="pd-deficiency-header" style={{ alignItems: 'center' }}>
-              <span className="pd-def-icon">📄</span>
-                <p className="pd-card-title" style={{ margin: 0 }}>Deficiency Report</p>
+            <div className="pd-deficiency-header">
+              <p className="pd-card-title">Deficiency report</p>
             </div>
             <button className="pd-pdf-btn" onClick={() => setPdfOpen(true)}>
-              View PDF Report
+              View PDF report
             </button>
           </div>
         )}
 
         <div className="pd-card">
-          <p className="pd-card-title">Property Details</p>
-          <div className="pd-details-grid">
+          <p className="pd-card-title">Property details</p>
+          <dl className="pd-details-grid">
             <div className="pd-detail-item">
-              <span className="pd-detail-label">Service Type</span>
-              <span className="pd-detail-value">{property.service_type}</span>
+              <dt className="pd-detail-label">Service Type</dt>
+              <dd className="pd-detail-value">{property.service_type}</dd>
             </div>
             <div className="pd-detail-item">
-              <span className="pd-detail-label">Submission Date</span>
-              <span className="pd-detail-value">{property.submission_date || '—'}</span>
+              <dt className="pd-detail-label">Submission Date</dt>
+              <dd className="pd-detail-value">{property.submission_date || '—'}</dd>
             </div>
             <div className="pd-detail-item">
-              <span className="pd-detail-label">Job Number</span>
-              <span className="pd-detail-value">{property.job_number || '—'}</span>
+              <dt className="pd-detail-label">Job Number</dt>
+              <dd className="pd-detail-value">{property.job_number || '—'}</dd>
             </div>
             <div className="pd-detail-item">
-              <span className="pd-detail-label">Municipality</span>
-              <span className="pd-detail-value">{property.municipality || '—'}</span>
+              <dt className="pd-detail-label">Municipality</dt>
+              <dd className="pd-detail-value">{property.municipality || '—'}</dd>
             </div>
-          </div>
+          </dl>
         </div>
       </div>
 
