@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import config from '../config';
-import './AdminLogin.css';
+import './Auth.css';
 
 const AdminLogin = () => {
   const [username, setUsername] = useState('');
@@ -62,59 +62,67 @@ const AdminLogin = () => {
   };
 
   if (checking) return (
-    <div className="admin-login-container">
-      <p style={{ color: '#9ca3af', fontSize: '16px', fontWeight: '500' }}>Loading...</p>
+    <div className="auth-shell">
+      <main className="auth-main">
+        <p className="auth-loading">Loading…</p>
+      </main>
     </div>
   );
 
   return (
-    <div className="admin-login-container">
-      <div className="login-card">
-        <div className="admin-badge">Admin Portal</div>
-        <h2 className="vnco-title">VNCO SURVEYS</h2>
-        <h1>Admin Login</h1>
-        <p className="subtitle">Manage customer properties and data</p>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="username">Username</label>
-            <input
-              type="text"
-              id="username"
-              placeholder="Enter username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
+    <div className="auth-shell">
+      <main className="auth-main">
+        <div className="auth-panel">
+          <a href="https://vncosurveys.com" target="_blank" rel="noopener noreferrer">
+            <img src="/images/logo.png" alt="VNCO SURVEYS" className="logo" />
+          </a>
+          <p className="auth-eyebrow">Admin portal</p>
+          <h1>Sign in</h1>
+          <p className="subtitle">Manage customer properties and data.</p>
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label htmlFor="username">Username</label>
+              <input
+                type="text"
+                id="username"
+                placeholder="Enter username"
+                autoComplete="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="password">Password</label>
+              <input
+                type="password"
+                id="password"
+                placeholder="Enter password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <div className="remember-me">
+              <input
+                type="checkbox"
+                id="rememberMe"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
+              <label htmlFor="rememberMe">Remember this device</label>
+            </div>
+            {error && <div className="error-message" role="alert">{error}</div>}
+            <button type="submit" disabled={loading}>
+              {loading ? 'Signing in…' : 'Sign in'}
+            </button>
+          </form>
+          <div className="footer-text">
+            <a href="/">← Back to customer portal</a>
           </div>
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              placeholder="Enter password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <div className="remember-me">
-            <input
-              type="checkbox"
-              id="rememberMe"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-            />
-            <label htmlFor="rememberMe">Remember this device</label>
-          </div>
-          {error && <div className="error-message">{error}</div>}
-          <button type="submit" disabled={loading}>
-            {loading ? 'Logging in...' : 'Login'}
-          </button>
-        </form>
-        <div className="footer-text">
-          <a href="/">← Back to Customer Portal</a>
         </div>
-      </div>
+      </main>
     </div>
   );
 };
